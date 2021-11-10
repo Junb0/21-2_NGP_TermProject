@@ -7,6 +7,17 @@
 #include "Player.h"
 #include "Scene.h"
 
+#pragma pack(1)		// 구조체 멤버 맞춤은 1바이트 경계
+struct RequestMessage
+{
+	int playerID;
+	bool bIsAccel;
+	bool bIsDeccel;
+	bool bIsRotateLeft;
+	bool bIsRotateRight;
+	bool bIsFire;
+};
+
 class CGameFramework
 {
 public:
@@ -89,5 +100,7 @@ private:
 	POINT						m_ptOldCursorPos;
 
 	_TCHAR						m_pszFrameRate[70];
+
+	RequestMessage				m_message;
 };
 
