@@ -1,6 +1,6 @@
 #pragma once
 
-//#include "Timer.h"
+#include "Timer.h"
 //#include "Scene.h"
 
 #pragma pack(push, 1)		// 구조체 멤버 맞춤은 1바이트 경계
