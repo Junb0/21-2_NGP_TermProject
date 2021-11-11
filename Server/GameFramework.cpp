@@ -34,7 +34,7 @@ void CGameFramework::BuildObjects()
 	//m_pScene = new CScene();
 	//if (m_pScene) m_pScene->BuildObjects();
 
-	//m_GameTimer.Reset();
+	m_GameTimer.Reset();
 }
 
 void CGameFramework::ReleaseObjects()
@@ -45,14 +45,16 @@ void CGameFramework::ReleaseObjects()
 
 void CGameFramework::AnimateObjects()
 {
-	//float fTimeElapsed = m_GameTimer.GetTimeElapsed();
+	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
+
+	cout << "AnimateObjects ½ÇÇà, fTimeElapsed : " << fTimeElapsed << endl;
 
 	//if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);
 }
 
 void CGameFramework::FrameAdvance()
 {    
-	//m_GameTimer.Tick(30.0f);
+	m_GameTimer.Tick(30.0f);
 	
     AnimateObjects();
 

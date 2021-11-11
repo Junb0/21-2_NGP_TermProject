@@ -50,7 +50,7 @@ private:
 	int							m_nWndClientWidth;
 	int							m_nWndClientHeight;
 
-	//CGameTimer					m_GameTimer;
+	CGameTimer					m_GameTimer;
 
 	//CScene						*m_pScene = NULL;
 
