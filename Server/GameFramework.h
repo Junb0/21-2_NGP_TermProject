@@ -1,12 +1,9 @@
 #pragma once
 
-#define FRAME_BUFFER_WIDTH		640
-#define FRAME_BUFFER_HEIGHT		480
-
 //#include "Timer.h"
 //#include "Scene.h"
 
-#pragma pack(1)		// 구조체 멤버 맞춤은 1바이트 경계
+#pragma pack(push, 1)		// 구조체 멤버 맞춤은 1바이트 경계
 struct ResponseMessage
 {
 	XMFLOAT2 xmf2TankPosition[3];
@@ -27,6 +24,7 @@ struct ResponseMessage
 
 	bool bIsGameOver;
 };
+#pragma pack(pop)
 
 class CGameFramework
 {

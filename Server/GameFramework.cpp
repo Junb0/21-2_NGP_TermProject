@@ -7,9 +7,6 @@
 
 CGameFramework::CGameFramework()
 {
-	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
-	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
-
 	//m_pScene = NULL;
 }
 
