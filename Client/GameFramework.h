@@ -7,7 +7,7 @@
 #include "Player.h"
 #include "Scene.h"
 
-#pragma pack(1)		// 구조체 멤버 맞춤은 1바이트 경계
+#pragma pack(push, 1)		// 구조체 멤버 맞춤은 1바이트 경계
 struct RequestMessage
 {
 	int playerID;
@@ -17,6 +17,7 @@ struct RequestMessage
 	bool bIsRotateRight;
 	bool bIsFire;
 };
+#pragma pack(pop)
 
 class CGameFramework
 {
