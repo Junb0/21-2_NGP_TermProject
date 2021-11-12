@@ -1,6 +1,16 @@
 ﻿// LabProject07-9-1.cpp : 응용 프로그램에 대한 진입점을 정의합니다.
 //
 
+// 네트워크
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+
+#pragma comment(lib, "ws2_32")
+#include <WinSock2.h>
+#define SERVERIP "127.0.0.1"
+#define SERVERPORT 12050
+//
+
 #include "stdafx.h"
 #include "TermProject.h"
 #include "GameFramework.h"
@@ -13,13 +23,93 @@ TCHAR							szWindowClass[MAX_LOADSTRING];
 
 CGameFramework					gGameFramework;
 
+HANDLE hSendBufferWriteEvent;
+HANDLE hSendBufferReadEvent;
+
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
+// 소켓 함수 오류 출력 후 종료
+void err_quit(char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	MessageBox(NULL, (LPCTSTR)lpMsgBuf, (LPCWSTR)msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+	exit(1);
+}
+
+// 소켓 함수 오류 출력
+void err_display(char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	printf("[%s] %s", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
+}
+
+DWORD WINAPI SendThread(LPVOID arg)
+{
+	SOCKET sock = (SOCKET)arg;
+
+	int retval;
+	SOCKADDR_IN serveraddr;
+	int addrlen;
+
+	// 서버 정보 얻기
+	addrlen = sizeof(serveraddr);
+	getpeername(sock, (SOCKADDR*)&serveraddr, &addrlen);
+
+	// 서버에게 데이터 보내기
+	while (1) {
+
+	}
+
+	return 0;
+}
+
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	int retval;
+
+	// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
+
+	// socket()
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET) err_quit((char*)"socket()");
+
+	// connect()
+	SOCKADDR_IN serveraddr;
+	ZeroMemory(&serveraddr, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
+	serveraddr.sin_port = htons(SERVERPORT);
+	retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
+	//if (retval == SOCKET_ERROR) err_quit((char*)"connect()");
+
+	// make recv thread
+	HANDLE hSendThread;
+
+	hSendThread = CreateThread(NULL, 0, SendThread, (LPVOID)sock, 0, NULL);
+	if (hSendThread == NULL)
+		closesocket(sock);
+	else
+		CloseHandle(hSendThread);
+
+
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -51,6 +141,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		}
 	}
 	gGameFramework.OnDestroy();
+
+	// closesocket()
+	closesocket(sock);
+
+	// 윈속 종료
+	WSACleanup();
 
 	return((int)msg.wParam);
 }
