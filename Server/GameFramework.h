@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Timer.h"
-//#include "Scene.h"
+#include "Scene.h"
 
 #pragma pack(push, 1)		// 구조체 멤버 맞춤은 1바이트 경계
 struct ResponseMessage
@@ -52,7 +52,7 @@ private:
 
 	CGameTimer					m_GameTimer;
 
-	//CScene						*m_pScene = NULL;
+	CScene						*m_pScene = NULL;
 
 	_TCHAR						m_pszFrameRate[70];
 
