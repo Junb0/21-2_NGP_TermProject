@@ -13,10 +13,11 @@ void CScene::BuildObjects() {
 
 }
 
-void ReleaseObjects() {
+void CScene::ReleaseObjects() {
 
 }
 
-void AnimateObjects(float fTimeElapsed) {
-
+void CScene::AnimateObjects(float fTimeElapsed) {
+	m_fElapsedTime = fTimeElapsed;
+	for (int i = 0; i < m_nGameObjects; ++i) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
 }
