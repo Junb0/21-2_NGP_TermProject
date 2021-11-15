@@ -25,6 +25,7 @@ CGameFramework					gGameFramework;
 
 HANDLE hSendBufferWriteEvent;
 HANDLE hSendBufferReadEvent;
+RequestMessage rmTankInfo;
 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
@@ -72,7 +73,17 @@ DWORD WINAPI SendThread(LPVOID arg)
 
 	// 서버에게 데이터 보내기
 	while (1) {
+		// 쓰기 완료 대기
+		retval = WaitForSingleObject(hSendBufferWriteEvent, INFINITE);
+		if (retval != WAIT_OBJECT_0) break;
 
+		// 데이터 전송
+		
+
+		ZeroMemory(&rmTankInfo, sizeof(rmTankInfo));
+		
+		// 읽기 완료 알림
+		SetEvent(hSendBufferReadEvent);
 	}
 
 	return 0;
@@ -100,7 +111,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
 	//if (retval == SOCKET_ERROR) err_quit((char*)"connect()");
 
-	// make recv thread
+	// create event
+	hSendBufferWriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	hSendBufferReadEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+
+	// make send thread
 	HANDLE hSendThread;
 
 	hSendThread = CreateThread(NULL, 0, SendThread, (LPVOID)sock, 0, NULL);
@@ -108,7 +123,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		closesocket(sock);
 	else
 		CloseHandle(hSendThread);
-
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -138,9 +152,17 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		else
 		{
 			gGameFramework.FrameAdvance();
+			
+			rmTankInfo = gGameFramework.GetRequestMessage();
+			retval = WaitForSingleObject(hSendBufferReadEvent, INFINITE);	// 몇 초 기다리지
+			SetEvent(hSendBufferWriteEvent);
 		}
 	}
 	gGameFramework.OnDestroy();
+
+	// 이벤트 제거
+	CloseHandle(hSendBufferReadEvent);
+	CloseHandle(hSendBufferWriteEvent);
 
 	// closesocket()
 	closesocket(sock);
