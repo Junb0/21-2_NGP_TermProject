@@ -8,6 +8,9 @@
 
 CGameFramework gGameFramework;
 
+HANDLE hRecvBufferWriteEvent;
+HANDLE hRecvBufferReadEvent;
+
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
 {
@@ -48,7 +51,13 @@ DWORD WINAPI RecvThread(LPVOID arg)
 
 	// 클라이언트로부터 데이터 받기
 	while (1) {
-		
+		// 읽기 완료 대기
+		retval = WaitForSingleObject(hRecvBufferReadEvent, INFINITE);
+		if (retval != WAIT_OBJECT_0) break;
+
+
+		// 쓰기 완료 알림
+		SetEvent(hRecvBufferWriteEvent);
 	}
 
 	// closesocket()
@@ -90,6 +99,11 @@ int main(int argc, char *argv[]) {
 	SOCKET client_sock;
 	SOCKADDR_IN clientaddr;
 	int addrlen;
+
+	// 이벤트
+	hRecvBufferReadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	hRecvBufferWriteEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+
 	HANDLE hRecvThread;
 
 	while (1) {
@@ -114,8 +128,15 @@ int main(int argc, char *argv[]) {
 
 		while (1) {
 			gGameFramework.FrameAdvance();
+
+			retval = WaitForSingleObject(hRecvBufferWriteEvent, INFINITE);
+			SetEvent(hRecvBufferReadEvent);
 		}
 	}
+
+	//이벤트 제거
+	CloseHandle(hRecvBufferWriteEvent);
+	CloseHandle(hRecvBufferReadEvent);
 
 	// closesocket()
 	closesocket(listen_sock);
