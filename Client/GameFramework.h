@@ -54,7 +54,7 @@ public:
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
-	RequestMessage GetRequestMessage() { return m_message; };
+	RequestMessage GetRequestMessage() { return m_RequestMessage; };
 
 private:
 	HINSTANCE					m_hInstance;
@@ -103,6 +103,6 @@ private:
 
 	_TCHAR						m_pszFrameRate[70];
 
-	RequestMessage				m_message;
+	RequestMessage				m_RequestMessage;
 };
 

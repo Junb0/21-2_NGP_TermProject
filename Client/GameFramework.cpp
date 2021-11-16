@@ -429,16 +429,23 @@ void CGameFramework::ProcessInput()
 {
 	static UCHAR pKeysBuffer[256];
 	bool bProcessedByScene = false;
-	if (GetKeyboardState(pKeysBuffer) && m_pScene) bProcessedByScene = m_pScene->ProcessInput(pKeysBuffer, m_GameTimer.GetTimeElapsed());
+	if (GetKeyboardState(pKeysBuffer) && m_pScene) //bProcessedByScene = m_pScene->ProcessInput(pKeysBuffer, m_GameTimer.GetTimeElapsed());
 	if (!bProcessedByScene)
 	{
 		DWORD dwDirection = 0;
-		if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+		//if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
+		//if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
+		//if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
+		//if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
+		//if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
+		//if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
+
+		ZeroMemory(&m_RequestMessage, sizeof(m_RequestMessage));
+		if (pKeysBuffer[VK_UP] & 0xF0) m_RequestMessage.bIsAccel = true;
+		if (pKeysBuffer[VK_DOWN] & 0xF0) m_RequestMessage.bIsDeccel = true;
+		if (pKeysBuffer[VK_LEFT] & 0xF0) m_RequestMessage.bIsRotateLeft = true;
+		if (pKeysBuffer[VK_RIGHT] & 0xF0) m_RequestMessage.bIsRotateRight = true;
+		if (pKeysBuffer[0x5A] & 0xF0) m_RequestMessage.bIsFire = true; // zŰ
 
 		float cxDelta = 0.0f, cyDelta = 0.0f;
 		POINT ptCursorPos;

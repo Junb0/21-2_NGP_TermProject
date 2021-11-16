@@ -78,7 +78,7 @@ DWORD WINAPI SendThread(LPVOID arg)
 		if (retval == WAIT_TIMEOUT) continue;
 
 		// 데이터 전송
-		
+		send(sock, (const char*)&rmTankInfo, sizeof(RequestMessage), NULL);
 
 		ZeroMemory(&rmTankInfo, sizeof(rmTankInfo));
 		
