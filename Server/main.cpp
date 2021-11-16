@@ -52,8 +52,8 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	// 클라이언트로부터 데이터 받기
 	while (1) {
 		// 읽기 완료 대기
-		retval = WaitForSingleObject(hRecvBufferReadEvent, INFINITE);
-		if (retval != WAIT_OBJECT_0) break;
+		retval = WaitForSingleObject(hRecvBufferReadEvent, 33);
+		if (retval == WAIT_TIMEOUT) continue;
 
 
 		// 쓰기 완료 알림
@@ -129,7 +129,9 @@ int main(int argc, char *argv[]) {
 		while (1) {
 			gGameFramework.FrameAdvance();
 
-			retval = WaitForSingleObject(hRecvBufferWriteEvent, INFINITE);
+			retval = WaitForSingleObject(hRecvBufferWriteEvent, 33);
+			if (retval == WAIT_TIMEOUT) continue;
+
 			SetEvent(hRecvBufferReadEvent);
 		}
 	}
