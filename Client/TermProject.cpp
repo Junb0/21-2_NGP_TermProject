@@ -74,8 +74,8 @@ DWORD WINAPI SendThread(LPVOID arg)
 	// 서버에게 데이터 보내기
 	while (1) {
 		// 쓰기 완료 대기
-		retval = WaitForSingleObject(hSendBufferWriteEvent, INFINITE);
-		if (retval != WAIT_OBJECT_0) break;
+		retval = WaitForSingleObject(hSendBufferWriteEvent, 33);
+		if (retval == WAIT_TIMEOUT) continue;
 
 		// 데이터 전송
 		
@@ -154,7 +154,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 			gGameFramework.FrameAdvance();
 			
 			rmTankInfo = gGameFramework.GetRequestMessage();
-			retval = WaitForSingleObject(hSendBufferReadEvent, INFINITE);	// 몇 초 기다리지
+			retval = WaitForSingleObject(hSendBufferReadEvent, 33);	// 1프레임
+			if (retval == WAIT_TIMEOUT) continue;
 			SetEvent(hSendBufferWriteEvent);
 		}
 	}

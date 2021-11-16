@@ -10,7 +10,6 @@
 #pragma pack(push, 1)		// 구조체 멤버 맞춤은 1바이트 경계
 struct RequestMessage
 {
-	int playerID;
 	bool bIsAccel;
 	bool bIsDeccel;
 	bool bIsRotateLeft;
