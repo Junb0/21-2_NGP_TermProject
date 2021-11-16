@@ -5,11 +5,14 @@
 #include "GameFramework.h"
 
 #define SERVERPORT 12050
+#define RECVBUFSIZE	   5
 
 CGameFramework gGameFramework;
 
 HANDLE hRecvBufferWriteEvent;
 HANDLE hRecvBufferReadEvent;
+
+char recvbuf[RECVBUFSIZE + 1];
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
@@ -55,6 +58,10 @@ DWORD WINAPI RecvThread(LPVOID arg)
 		retval = WaitForSingleObject(hRecvBufferReadEvent, 33);
 		if (retval == WAIT_TIMEOUT) continue;
 
+		ZeroMemory(&recvbuf, sizeof(recvbuf));
+
+		// 데이터 수신
+		retval = recv(client_sock, recvbuf, RECVBUFSIZE, 0);
 
 		// 쓰기 완료 알림
 		SetEvent(hRecvBufferWriteEvent);
@@ -104,7 +111,7 @@ int main(int argc, char *argv[]) {
 	hRecvBufferReadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	hRecvBufferWriteEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
 
-	HANDLE hRecvThread;
+	HANDLE hRecvThread[3];
 
 	while (1) {
 		// accept()
@@ -120,11 +127,23 @@ int main(int argc, char *argv[]) {
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
 		// recv 스레드 생성
-		hRecvThread = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
-		if (hRecvThread == NULL)
+		hRecvThread[0] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
+		if (hRecvThread[0] == NULL)
 			closesocket(client_sock);
 		else
-			CloseHandle(hRecvThread);
+			CloseHandle(hRecvThread[0]);
+		
+		hRecvThread[1] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
+		if (hRecvThread[1] == NULL)
+			closesocket(client_sock);
+		else
+			CloseHandle(hRecvThread[0]);
+		
+		hRecvThread[2] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
+		if (hRecvThread[2] == NULL)
+			closesocket(client_sock);
+		else
+			CloseHandle(hRecvThread[0]);
 
 		while (1) {
 			gGameFramework.FrameAdvance();
