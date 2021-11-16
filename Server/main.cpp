@@ -137,13 +137,13 @@ int main(int argc, char *argv[]) {
 		if (hRecvThread[1] == NULL)
 			closesocket(client_sock);
 		else
-			CloseHandle(hRecvThread[0]);
+			CloseHandle(hRecvThread[1]);
 		
 		hRecvThread[2] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
 		if (hRecvThread[2] == NULL)
 			closesocket(client_sock);
 		else
-			CloseHandle(hRecvThread[0]);
+			CloseHandle(hRecvThread[2]);
 
 		while (1) {
 			gGameFramework.FrameAdvance();
