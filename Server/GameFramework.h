@@ -53,6 +53,8 @@ public:
 	void CheckGameOver();
 
 	void SetRequestMessage(int id, char* pRecvBuff);
+	
+	RequestMessage* GetRequestMessage(int id) { return &m_RequestMessages[id]; }
 
 private:
 	HINSTANCE					m_hInstance;

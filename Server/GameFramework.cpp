@@ -47,6 +47,10 @@ void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 
+	RequestMessage* pTmp = GetRequestMessage(0);
+	printf("id: %d, Accel: %d, Deccel: %d, RotateL: %d, RotateR: %d, Fire: %d\n",
+		0, pTmp->bIsAccel, pTmp->bIsDeccel, pTmp->bIsRotateLeft, pTmp->bIsRotateRight, pTmp->bIsFire);
+
 	//cout << "AnimateObjects ½ÇÇà, fTimeElapsed : " << fTimeElapsed << endl;
 
 	//if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);

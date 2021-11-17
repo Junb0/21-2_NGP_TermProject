@@ -12,7 +12,7 @@ CGameFramework gGameFramework;
 HANDLE hRecvBufferWriteEvent;
 HANDLE hRecvBufferReadEvent;
 
-char recvbuf[RECVBUFSIZE];
+int recvThreadCnt = 0;
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
@@ -47,7 +47,9 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	int retval;
 	SOCKADDR_IN clientaddr;
 	int addrlen;
-	
+	char recvbuf[RECVBUFSIZE];
+	int threadID = recvThreadCnt++;
+
 	// 클라이언트 정보 얻기
 	addrlen = sizeof(clientaddr);
 	getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
@@ -60,12 +62,9 @@ DWORD WINAPI RecvThread(LPVOID arg)
 
 		ZeroMemory(&recvbuf, sizeof(recvbuf));
 
-		// 데이터 수신
+		// 데이터 수신 및 각 탱크의 RequestMessage버퍼에 저장
 		retval = recv(client_sock, recvbuf, RECVBUFSIZE, 0);
-		for (int i = 0; i < RECVBUFSIZE; ++i)
-			printf("%d ",recvbuf[i]);
-
-		printf("\n");
+		gGameFramework.SetRequestMessage(threadID, recvbuf);
 
 		// 쓰기 완료 알림
 		SetEvent(hRecvBufferWriteEvent);
