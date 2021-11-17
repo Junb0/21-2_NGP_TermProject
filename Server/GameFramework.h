@@ -24,6 +24,15 @@ struct ResponseMessage
 
 	bool bIsGameOver;
 };
+
+struct RequestMessage
+{
+	bool bIsAccel;
+	bool bIsDeccel;
+	bool bIsRotateLeft;
+	bool bIsRotateRight;
+	bool bIsFire;
+};
 #pragma pack(pop)
 
 class CGameFramework
@@ -43,6 +52,8 @@ public:
 
 	void CheckGameOver();
 
+	void SetRequestMessage(int id, char* pRecvBuff);
+
 private:
 	HINSTANCE					m_hInstance;
 	HWND						m_hWnd; 
@@ -56,6 +67,7 @@ private:
 
 	_TCHAR						m_pszFrameRate[70];
 
-	struct ResponseMessage		m_message;
+	ResponseMessage				m_ResponseMessage;
+	RequestMessage				m_RequestMessages[3];
 };
 

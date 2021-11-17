@@ -80,3 +80,12 @@ void CGameFramework::CheckGameOver()
 	//	PostQuitMessage(0);
 	//}
 }
+
+void CGameFramework::SetRequestMessage(int id, char* pRecvBuff)
+{
+	m_RequestMessages[id].bIsAccel = (bool)pRecvBuff[0];
+	m_RequestMessages[id].bIsDeccel = (bool)pRecvBuff[1];
+	m_RequestMessages[id].bIsRotateLeft = (bool)pRecvBuff[2];
+	m_RequestMessages[id].bIsRotateRight = (bool)pRecvBuff[3];
+	m_RequestMessages[id].bIsFire = (bool)pRecvBuff[4];
+}
