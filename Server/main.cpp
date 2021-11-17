@@ -62,6 +62,8 @@ DWORD WINAPI RecvThread(LPVOID arg)
 
 		// 데이터 수신
 		retval = recv(client_sock, recvbuf, RECVBUFSIZE, 0);
+		for (int i = 0; i < RECVBUFSIZE; ++i)
+			printf("%d ",recvbuf[i]);
 
 		// 쓰기 완료 알림
 		SetEvent(hRecvBufferWriteEvent);

@@ -589,8 +589,8 @@ void CGameFramework::FrameAdvance()
 	int GreenScore = m_pScene->m_ppTankObjects[0]->m_nScore;
 	int NowRound = m_pScene->m_nNowRound;
 
-	_stprintf_s(m_pszFrameRate + nLength, 150 - nLength, _T(" Round: %d (Green)[HP:%d, Score:%d] (Red)[HP:%d, Score:%d]"),
-		NowRound+1, RedHP, RedScore, GreenHP, GreenScore);
+	//_stprintf_s(m_pszFrameRate + nLength, 150 - nLength, _T(" Round: %d (Green)[HP:%d, Score:%d] (Red)[HP:%d, Score:%d]"),
+	//	NowRound+1, RedHP, RedScore, GreenHP, GreenScore);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
