@@ -12,7 +12,7 @@ CGameFramework gGameFramework;
 HANDLE hRecvBufferWriteEvent;
 HANDLE hRecvBufferReadEvent;
 
-char recvbuf[RECVBUFSIZE + 1];
+char recvbuf[RECVBUFSIZE];
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
@@ -64,6 +64,8 @@ DWORD WINAPI RecvThread(LPVOID arg)
 		retval = recv(client_sock, recvbuf, RECVBUFSIZE, 0);
 		for (int i = 0; i < RECVBUFSIZE; ++i)
 			printf("%d ",recvbuf[i]);
+
+		printf("\n");
 
 		// 쓰기 완료 알림
 		SetEvent(hRecvBufferWriteEvent);

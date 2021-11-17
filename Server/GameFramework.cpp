@@ -47,7 +47,7 @@ void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 
-	cout << "AnimateObjects 실행, fTimeElapsed : " << fTimeElapsed << endl;
+	//cout << "AnimateObjects 실행, fTimeElapsed : " << fTimeElapsed << endl;
 
 	//if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);
 }
