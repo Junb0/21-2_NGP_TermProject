@@ -9,8 +9,9 @@
 
 CGameFramework gGameFramework;
 
-HANDLE hRecvBufferWriteEvent;
-HANDLE hRecvBufferReadEvent;
+//HANDLE hRecvBufferWriteEvent;
+//HANDLE hRecvBufferReadEvent;
+HANDLE hRecvThreadEvent[4]; // 0,1,2 : recv스레드 이벤트, 3 : main스레드 이벤트
 
 int recvThreadCnt = 0;
 
@@ -57,8 +58,9 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	// 클라이언트로부터 데이터 받기
 	while (1) {
 		// 읽기 완료 대기
-		retval = WaitForSingleObject(hRecvBufferReadEvent, 33);
-		if (retval == WAIT_TIMEOUT) continue;
+		//retval = WaitForSingleObject(hRecvBufferReadEvent, 33);
+		retval = WaitForSingleObject(hRecvThreadEvent[threadID], 33);
+		//if (retval == WAIT_TIMEOUT) continue;
 
 		ZeroMemory(&recvbuf, sizeof(recvbuf));
 
@@ -67,7 +69,8 @@ DWORD WINAPI RecvThread(LPVOID arg)
 		gGameFramework.SetRequestMessage(threadID, recvbuf);
 
 		// 쓰기 완료 알림
-		SetEvent(hRecvBufferWriteEvent);
+		//SetEvent(hRecvBufferWriteEvent);
+		SetEvent(hRecvThreadEvent[threadID + 1]);
 	}
 
 	// closesocket()
@@ -111,12 +114,16 @@ int main(int argc, char *argv[]) {
 	int addrlen;
 
 	// 이벤트
-	hRecvBufferReadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	hRecvBufferWriteEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+	//hRecvBufferReadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	//hRecvBufferWriteEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+	hRecvThreadEvent[0] = CreateEvent(NULL, FALSE, TRUE, NULL);
+	hRecvThreadEvent[1] = CreateEvent(NULL, FALSE, FALSE, NULL);
+	hRecvThreadEvent[2] = CreateEvent(NULL, FALSE, FALSE, NULL);
+	hRecvThreadEvent[3] = CreateEvent(NULL, FALSE, FALSE, NULL);	// main스레드
 
 	HANDLE hRecvThread[3];
 
-	while (1) {
+	for (int i = 0; i < 3; ++i) {
 		// accept()
 		addrlen = sizeof(clientaddr);
 		client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
@@ -130,37 +137,30 @@ int main(int argc, char *argv[]) {
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
 		// recv 스레드 생성
-		hRecvThread[0] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
-		if (hRecvThread[0] == NULL)
+		hRecvThread[i] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
+		if (hRecvThread[i] == NULL)
 			closesocket(client_sock);
 		else
-			CloseHandle(hRecvThread[0]);
-		
-		hRecvThread[1] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
-		if (hRecvThread[1] == NULL)
-			closesocket(client_sock);
-		else
-			CloseHandle(hRecvThread[1]);
-		
-		hRecvThread[2] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
-		if (hRecvThread[2] == NULL)
-			closesocket(client_sock);
-		else
-			CloseHandle(hRecvThread[2]);
+			CloseHandle(hRecvThread[i]);
+	}
 
-		while (1) {
-			gGameFramework.FrameAdvance();
+	while (1) {
+		//retval = WaitForSingleObject(hRecvBufferWriteEvent, 33);
+		retval = WaitForSingleObject(hRecvThreadEvent[3], 33);
+		//if (retval == WAIT_TIMEOUT) continue;
 
-			retval = WaitForSingleObject(hRecvBufferWriteEvent, 33);
-			if (retval == WAIT_TIMEOUT) continue;
+		gGameFramework.FrameAdvance();
 
-			SetEvent(hRecvBufferReadEvent);
-		}
+		//SetEvent(hRecvBufferReadEvent);
+		SetEvent(hRecvThreadEvent[0]);
 	}
 
 	//이벤트 제거
-	CloseHandle(hRecvBufferWriteEvent);
-	CloseHandle(hRecvBufferReadEvent);
+	//CloseHandle(hRecvBufferWriteEvent);
+	//CloseHandle(hRecvBufferReadEvent);
+	for (int i = 0; i < 4; ++i) {
+		CloseHandle(hRecvThreadEvent[i]);
+	}
 
 	// closesocket()
 	closesocket(listen_sock);
