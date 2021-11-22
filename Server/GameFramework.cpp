@@ -46,14 +46,13 @@ void CGameFramework::ReleaseObjects()
 void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
-	
+
 	system("cls");
 	for (int i = 0; i < 3; ++i) {
 		RequestMessage* pTmp = GetRequestMessage(i);
 		printf("id: %d, Accel: %d, Deccel: %d, RotateL: %d, RotateR: %d, Fire: %d\n",
 			i, pTmp->bIsAccel, pTmp->bIsDeccel, pTmp->bIsRotateLeft, pTmp->bIsRotateRight, pTmp->bIsFire);
 	}
-	
 	//cout << "AnimateObjects ½ÇÇà, fTimeElapsed : " << fTimeElapsed << endl;
 
 	//if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);
@@ -95,4 +94,18 @@ void CGameFramework::SetRequestMessage(int id, char* pRecvBuff)
 	m_RequestMessages[id].bIsRotateLeft = (bool)pRecvBuff[2];
 	m_RequestMessages[id].bIsRotateRight = (bool)pRecvBuff[3];
 	m_RequestMessages[id].bIsFire = (bool)pRecvBuff[4];
+}
+
+void CGameFramework::ProcessInput()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		DWORD dwDirection = 0;
+
+		if (m_RequestMessages[i].bIsAccel) dwDirection |= DIR_FORWARD;
+		if (m_RequestMessages[i].bIsDeccel) dwDirection |= DIR_BACKWARD;
+		if (m_RequestMessages[i].bIsRotateLeft) dwDirection |= DIR_LEFT;
+		if (m_RequestMessages[i].bIsRotateRight) dwDirection |= DIR_RIGHT;
+	}
+
 }

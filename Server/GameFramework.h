@@ -50,6 +50,8 @@ public:
     void AnimateObjects();
     void FrameAdvance();
 
+	void ProcessInput();
+
 	void CheckGameOver();
 
 	void SetRequestMessage(int id, char* pRecvBuff);
