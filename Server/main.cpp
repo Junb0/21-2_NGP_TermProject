@@ -9,11 +9,9 @@
 
 CGameFramework gGameFramework;
 
-//HANDLE hRecvBufferWriteEvent;
-//HANDLE hRecvBufferReadEvent;
-HANDLE hRecvThreadEvent[4]; // 0,1,2 : recv스레드 이벤트, 3 : main스레드 이벤트
+HANDLE hRecvThreadEvent[4]; // 0,1,2 : recv 스레드 이벤트, 3 : main 스레드 이벤트
 
-int recvThreadCnt = 0;
+int recvThreadCnt = 0;	// 스레드 번호
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(char* msg)
@@ -57,19 +55,20 @@ DWORD WINAPI RecvThread(LPVOID arg)
 
 	// 클라이언트로부터 데이터 받기
 	while (1) {
-		// 읽기 완료 대기
-		//retval = WaitForSingleObject(hRecvBufferReadEvent, 33);
+		// 스레드 신호 대기
 		retval = WaitForSingleObject(hRecvThreadEvent[threadID], 33);
-		//if (retval == WAIT_TIMEOUT) continue;
+		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[threadID + 1]);
 
 		ZeroMemory(&recvbuf, sizeof(recvbuf));
 
 		// 데이터 수신 및 각 탱크의 RequestMessage버퍼에 저장
 		retval = recv(client_sock, recvbuf, RECVBUFSIZE, 0);
 		gGameFramework.SetRequestMessage(threadID, recvbuf);
-
-		// 쓰기 완료 알림
-		//SetEvent(hRecvBufferWriteEvent);
+		
+		// 순서 제어 확인
+		//cout << threadID << endl;
+		
+		// 다음 스레드 이벤트를 신호 상태로
 		SetEvent(hRecvThreadEvent[threadID + 1]);
 	}
 
@@ -113,14 +112,10 @@ int main(int argc, char *argv[]) {
 	SOCKADDR_IN clientaddr;
 	int addrlen;
 
-	// 이벤트
-	//hRecvBufferReadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	//hRecvBufferWriteEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
-	hRecvThreadEvent[0] = CreateEvent(NULL, FALSE, TRUE, NULL);
-	hRecvThreadEvent[1] = CreateEvent(NULL, FALSE, FALSE, NULL);
-	hRecvThreadEvent[2] = CreateEvent(NULL, FALSE, FALSE, NULL);
-	hRecvThreadEvent[3] = CreateEvent(NULL, FALSE, FALSE, NULL);	// main스레드
+	// main 스레드 이벤트 생성
+	hRecvThreadEvent[3] = CreateEvent(NULL, FALSE, FALSE, NULL);
 
+	// recv 스레드 생성
 	HANDLE hRecvThread[3];
 
 	for (int i = 0; i < 3; ++i) {
@@ -142,16 +137,22 @@ int main(int argc, char *argv[]) {
 			closesocket(client_sock);
 		else
 			CloseHandle(hRecvThread[i]);
+
+		// recv 스레드 이벤트 생성
+		hRecvThreadEvent[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
 	}
 
+	// 0번 스레드부터 시작 (0 -> 1 -> 2 -> main)
+	SetEvent(hRecvThreadEvent[0]);
+
 	while (1) {
-		//retval = WaitForSingleObject(hRecvBufferWriteEvent, 33);
+		// main 스레드 신호 대기
 		retval = WaitForSingleObject(hRecvThreadEvent[3], 33);
-		//if (retval == WAIT_TIMEOUT) continue;
+		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[0]);
 
 		gGameFramework.FrameAdvance();
 
-		//SetEvent(hRecvBufferReadEvent);
+		// 0번 스레드 이벤트를 신호 상태로
 		SetEvent(hRecvThreadEvent[0]);
 	}
 
