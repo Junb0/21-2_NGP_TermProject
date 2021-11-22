@@ -178,3 +178,149 @@ CGameObject* CGameObject::LoadGeometryFromFile(char* pstrFileName)
 
 	return(pGameObject);
 }
+
+
+CTankObject::CTankObject()
+{
+	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+	m_xmf3Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_xmf3Gravity = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_fMaxVelocityXZ = 50.0f;
+	m_fMaxVelocityY = 0.0f;
+	m_fFriction = 0.0f;
+
+	m_fPitch = 0.0f;
+	m_fRoll = 0.0f;
+	m_fYaw = 0.0f;
+
+	m_fScaleX = 1.0f;
+	m_fScaleY = 1.0f;
+	m_fScaleZ = 1.0f;
+
+	m_fAccelSpeedXZ = 0.0f;
+	m_fSpeedRotateY = 90.0f;
+
+	m_fFireWaitingTime = 0.0f;
+	m_fFireDelayTime = 0.2f;
+
+	m_bIsDead = false;
+	m_nHP = 100;
+}
+
+CTankObject::~CTankObject()
+{
+
+}
+
+void CTankObject::OnInitialize()
+{
+}
+
+void CTankObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	if (m_pTankTurret && GetDead())
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
+		XMMATRIX xmmtxTrnslate = XMMatrixTranslation(0.0f, 1.0f * fTimeElapsed, 0.0f);
+		m_pTankTurret->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTankTurret->m_xmf4x4Transform);
+		m_pTankTurret->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxTrnslate, m_pTankTurret->m_xmf4x4Transform);
+	}
+	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+}
+
+void CTankObject::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
+{
+	if (dwDirection)
+	{
+		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
+		/*if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, fDistance);
+		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, -fDistance);
+		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, fDistance);
+		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, -fDistance);
+		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, fDistance);
+		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, -fDistance);*/
+
+		Move(xmf3Shift, bUpdateVelocity);
+	}
+}
+
+void CTankObject::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
+{
+	if (bUpdateVelocity) m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, xmf3Shift);
+	else m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
+
+	if (m_xmf3Position.x > MAP_BOUNDARY)
+		m_xmf3Position.x = MAP_BOUNDARY;
+
+	if (m_xmf3Position.x < -MAP_BOUNDARY)
+		m_xmf3Position.x = -MAP_BOUNDARY;
+
+	if (m_xmf3Position.z > MAP_BOUNDARY)
+		m_xmf3Position.z = MAP_BOUNDARY;
+
+	if (m_xmf3Position.z < -MAP_BOUNDARY)
+		m_xmf3Position.z = -MAP_BOUNDARY;
+}
+
+void CTankObject::Rotate(float x, float y, float z)
+{
+	if (x != 0.0f)
+	{
+		m_fPitch += x;
+		if (m_fPitch > +89.0f) { x -= (m_fPitch - 89.0f); m_fPitch = +89.0f; }
+		if (m_fPitch < -89.0f) { x -= (m_fPitch + 89.0f); m_fPitch = -89.0f; }
+	}
+	if (y != 0.0f)
+	{
+		m_fYaw += y;
+		if (m_fYaw > 360.0f) m_fYaw -= 360.0f;
+		if (m_fYaw < 0.0f) m_fYaw += 360.0f;
+	}
+	if (z != 0.0f)
+	{
+		m_fRoll += z;
+		if (m_fRoll > +20.0f) { z -= (m_fRoll - 20.0f); m_fRoll = +20.0f; }
+		if (m_fRoll < -20.0f) { z -= (m_fRoll + 20.0f); m_fRoll = -20.0f; }
+	}
+	if (y != 0.0f)
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Up), XMConvertToRadians(y));
+		m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, xmmtxRotate);
+		m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, xmmtxRotate);
+	}
+
+
+	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
+	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+	m_xmf3Up = Vector3::CrossProduct(m_xmf3Look, m_xmf3Right, true);
+}
+
+void CTankObject::Update(float fTimeElapsed)
+{
+	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
+	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
+	float fMaxVelocityXZ = m_fMaxVelocityXZ * m_fGuaranteeMaxVelocityXZ;
+	if (fLength > m_fMaxVelocityXZ * m_fGuaranteeMaxVelocityXZ)
+	{
+		m_xmf3Velocity.x *= (fMaxVelocityXZ / fLength);
+		m_xmf3Velocity.z *= (fMaxVelocityXZ / fLength);
+	}
+	float fMaxVelocityY = m_fMaxVelocityY;
+	fLength = sqrtf(m_xmf3Velocity.y * m_xmf3Velocity.y);
+	if (fLength > m_fMaxVelocityY) m_xmf3Velocity.y *= (fMaxVelocityY / fLength);
+
+	XMFLOAT3 xmf3Velocity = Vector3::ScalarProduct(m_xmf3Velocity, fTimeElapsed, false);
+	Move(xmf3Velocity, false);
+
+	fLength = Vector3::Length(m_xmf3Velocity);
+	float fDeceleration = (m_fFriction * fTimeElapsed);
+	if (fDeceleration > fLength) fDeceleration = fLength;
+	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
+
+	if (m_fFireWaitingTime > 0.0f) m_fFireWaitingTime -= fTimeElapsed;
+
+}
