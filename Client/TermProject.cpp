@@ -27,6 +27,8 @@ HANDLE hSendBufferWriteEvent;
 HANDLE hSendBufferReadEvent;
 RequestMessage rmTankInfo;
 
+CRITICAL_SECTION csResponseSceneBufferAccess;
+
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -89,6 +91,29 @@ DWORD WINAPI SendThread(LPVOID arg)
 	return 0;
 }
 
+DWORD WINAPI RecvThread(LPVOID arg)
+{
+	SOCKET sock = (SOCKET)arg;
+
+	int retval;
+	SOCKADDR_IN serveraddr;
+	int addrlen;
+
+
+	// 서버 정보 얻기
+	addrlen = sizeof(serveraddr);
+	getpeername(sock, (SOCKADDR*)&serveraddr, &addrlen);
+
+	// 서버에게 데이터 받기
+	while (1) {
+		//retval = recv(sock, );
+		//EnterCriticalSection(&csResponseSceneBufferAccess);
+		//LeaveCriticalSection(&csResponseSceneBufferAccess);
+	}
+
+	return 0;
+}
+
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	int retval;
@@ -123,6 +148,14 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		closesocket(sock);
 	else
 		CloseHandle(hSendThread);
+
+	HANDLE hRecvThread;
+
+	hRecvThread = CreateThread(NULL, 0, RecvThread, (LPVOID)sock, 0, NULL);
+	if (hRecvThread == NULL)
+		closesocket(sock);
+	else
+		CloseHandle(hRecvThread);
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
