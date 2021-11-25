@@ -107,7 +107,7 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	// 서버에게 데이터 받기
 	while (1) {
 		ZeroMemory(&rpSceneInfo, sizeof(rpSceneInfo));
-		//retval = recv(sock, (char*)&rpSceneInfo, sizeof(rpSceneInfo), 0);
+		retval = recv(sock, (char*)&rpSceneInfo, sizeof(rpSceneInfo), 0);
 
 		EnterCriticalSection(&csResponseSceneBufferAccess);
 		gGameFramework.SetResponseMessage(rpSceneInfo);
