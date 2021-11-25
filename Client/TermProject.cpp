@@ -25,7 +25,7 @@ CGameFramework					gGameFramework;
 
 HANDLE hSendBufferWriteEvent;
 HANDLE hSendBufferReadEvent;
-RequestMessage rmTankInfo;
+RequestMessage rqTankInfo;
 
 CRITICAL_SECTION csResponseSceneBufferAccess;
 
@@ -80,9 +80,9 @@ DWORD WINAPI SendThread(LPVOID arg)
 		if (retval == WAIT_TIMEOUT) continue;
 
 		// 데이터 전송
-		send(sock, (const char*)&rmTankInfo, sizeof(RequestMessage), NULL);
+		send(sock, (const char*)&rqTankInfo, sizeof(RequestMessage), NULL);
 
-		ZeroMemory(&rmTankInfo, sizeof(rmTankInfo));
+		ZeroMemory(&rqTankInfo, sizeof(rqTankInfo));
 		
 		// 읽기 완료 알림
 		SetEvent(hSendBufferReadEvent);
@@ -98,7 +98,7 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	int retval;
 	SOCKADDR_IN serveraddr;
 	int addrlen;
-
+	ResponseMessage rpSceneInfo;
 
 	// 서버 정보 얻기
 	addrlen = sizeof(serveraddr);
@@ -106,9 +106,12 @@ DWORD WINAPI RecvThread(LPVOID arg)
 
 	// 서버에게 데이터 받기
 	while (1) {
-		//retval = recv(sock, );
-		//EnterCriticalSection(&csResponseSceneBufferAccess);
-		//LeaveCriticalSection(&csResponseSceneBufferAccess);
+		ZeroMemory(&rpSceneInfo, sizeof(rpSceneInfo));
+		//retval = recv(sock, (char*)&rpSceneInfo, sizeof(rpSceneInfo), 0);
+
+		EnterCriticalSection(&csResponseSceneBufferAccess);
+		gGameFramework.SetResponseMessage(rpSceneInfo);
+		LeaveCriticalSection(&csResponseSceneBufferAccess);
 	}
 
 	return 0;
@@ -149,6 +152,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	else
 		CloseHandle(hSendThread);
 
+	// InitCS
+	InitializeCriticalSection(&csResponseSceneBufferAccess);
+
+	// make recv thread
 	HANDLE hRecvThread;
 
 	hRecvThread = CreateThread(NULL, 0, RecvThread, (LPVOID)sock, 0, NULL);
@@ -184,9 +191,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		}
 		else
 		{
+			EnterCriticalSection(&csResponseSceneBufferAccess);
+			gGameFramework.ApplySceneInfo();
+			LeaveCriticalSection(&csResponseSceneBufferAccess);
+
 			gGameFramework.FrameAdvance();
 			
-			rmTankInfo = gGameFramework.GetRequestMessage();
+			rqTankInfo = gGameFramework.GetRequestMessage();
 			retval = WaitForSingleObject(hSendBufferReadEvent, 33);	// 1프레임
 			if (retval == WAIT_TIMEOUT) continue;
 			SetEvent(hSendBufferWriteEvent);

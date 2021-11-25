@@ -8,6 +8,27 @@
 #include "Scene.h"
 
 #pragma pack(push, 1)		// 구조체 멤버 맞춤은 1바이트 경계
+struct ResponseMessage
+{
+	XMFLOAT2 xmf2TankPosition[3];
+	XMFLOAT2 xmf2TankLook[3];
+	XMFLOAT2 xmf2TankVelocity[3];
+
+	int nPlayerHP[3];
+	int nPlayerScore[3];
+
+	bool bBulletsActive[30];
+	XMFLOAT2 xmf2BulletsPosition[30];
+	XMFLOAT2 xmf2BulletsLook[30];
+
+	bool bItemsActive[6];
+	XMFLOAT3 xmf3ItemsPosition[6];
+
+	int nCurrentRound;
+
+	bool bIsGameOver;
+};
+
 struct RequestMessage
 {
 	bool bIsAccel;
@@ -55,6 +76,8 @@ public:
 	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
 	RequestMessage GetRequestMessage() { return m_RequestMessage; };
+	void SetResponseMessage(const ResponseMessage& ResponseMessage) { m_ResponseMessage = ResponseMessage; };
+	void ApplySceneInfo();
 
 private:
 	HINSTANCE					m_hInstance;
@@ -104,5 +127,6 @@ private:
 	_TCHAR						m_pszFrameRate[70];
 
 	RequestMessage				m_RequestMessage;
+	ResponseMessage				m_ResponseMessage;
 };
 
