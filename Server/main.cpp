@@ -10,6 +10,8 @@
 CGameFramework gGameFramework;
 
 HANDLE hRecvThreadEvent[4]; // 0,1,2 : recv 스레드 이벤트, 3 : main 스레드 이벤트
+HANDLE hSendBufferWriteEvent;
+HANDLE hSendBufferReadEvent;
 
 int recvThreadCnt = 0;	// 스레드 번호
 
@@ -80,6 +82,41 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	return 0;
 }
 
+DWORD WINAPI SendThread(LPVOID arg)
+{
+	SOCKET* client_socks = (SOCKET*)arg;
+	int retval;
+	SOCKADDR_IN clientaddrs[3];
+	int addrlen[3];
+
+	// 클라이언트 정보 얻기
+	for (int i = 0; i < 3; ++i)
+	{
+		addrlen[i] = sizeof(clientaddrs[i]);
+		getpeername(client_socks[i], (SOCKADDR*)&clientaddrs[i], &addrlen[i]);
+	}
+
+	// 클라이언트로부터 데이터 받기
+	while (1) {
+		// 게임루프의 쓰기 완료 대기
+		retval = WaitForSingleObject(hSendBufferWriteEvent, 33);
+		if (retval == WAIT_TIMEOUT) continue;
+
+
+		// 3개의 클라이언트에게 sendbuf 송신
+		for (int i = 0; i < 3; ++i)
+		{
+			retval = send(client_socks[i], (const char*)gGameFramework.GetResponseMessage(), sizeof(ResponseMessage), NULL);
+		}
+		ZeroMemory(gGameFramework.GetResponseMessage(), sizeof(ResponseMessage));
+
+		// 읽기 완료 알림
+		SetEvent(hSendBufferReadEvent);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	gGameFramework.BuildObjects();
 
@@ -109,6 +146,7 @@ int main(int argc, char *argv[]) {
 
 	// 데이터 통신에 사용할 변수
 	SOCKET client_sock;
+	SOCKET client_socks[3];
 	SOCKADDR_IN clientaddr;
 	int addrlen;
 
@@ -131,6 +169,7 @@ int main(int argc, char *argv[]) {
 		printf("\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
+		client_socks[i] = client_sock;
 		// recv 스레드 생성
 		hRecvThread[i] = CreateThread(NULL, 0, RecvThread, (LPVOID)client_sock, 0, NULL);
 		if (hRecvThread[i] == NULL)
@@ -141,6 +180,13 @@ int main(int argc, char *argv[]) {
 		// recv 스레드 이벤트 생성
 		hRecvThreadEvent[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
 	}
+	// send 스레드 생성
+	HANDLE hSendThread;
+	hSendThread = CreateThread(NULL, 0, SendThread, (LPVOID)client_socks, 0, NULL);
+	if (hSendThread == NULL)
+		for (int i = 0; i < 3; ++i) closesocket(client_socks[i]);
+	else
+		CloseHandle(hSendThread);
 
 	// 0번 스레드부터 시작 (0 -> 1 -> 2 -> main)
 	SetEvent(hRecvThreadEvent[0]);

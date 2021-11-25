@@ -57,6 +57,7 @@ public:
 	void SetRequestMessage(int id, char* pRecvBuff);
 	
 	RequestMessage* GetRequestMessage(int id) { return &m_RequestMessages[id]; }
+	ResponseMessage* GetResponseMessage() { return &m_ResponseMessage; }
 
 private:
 	HINSTANCE					m_hInstance;
