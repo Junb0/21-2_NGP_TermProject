@@ -582,7 +582,7 @@ void CScene::RestartRound()
 		m_ppTankObjects[i]->SetGuaranteeMaxVel(1.0f);
 	}
 
-	if (m_nNowRound % 2 == 1)
+	if (m_nCurrentRound % 2 == 1)
 	{
 		m_ppTankObjects[0]->SetPosition(XMFLOAT3(13.0f, 0.0f, -5.0f));
 		m_ppTankObjects[1]->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
@@ -593,7 +593,7 @@ void CScene::RestartRound()
 		m_ppTankObjects[0]->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
 	}
 
-	m_nNowRound++;
+	m_nCurrentRound++;
 	for(int i = 0; i < m_nTankObjects; i++)
 		if (m_ppTankObjects[i]->m_nScore >= 3) m_bIsGameOver = true;
 

@@ -587,7 +587,7 @@ void CGameFramework::FrameAdvance()
 	int RedScore = m_pScene->m_ppTankObjects[1]->m_nScore;
 	int GreenHP = m_pScene->m_ppTankObjects[0]->GetHP();
 	int GreenScore = m_pScene->m_ppTankObjects[0]->m_nScore;
-	int NowRound = m_pScene->m_nNowRound;
+	int NowRound = m_pScene->m_nCurrentRound;
 
 	//_stprintf_s(m_pszFrameRate + nLength, 150 - nLength, _T(" Round: %d (Green)[HP:%d, Score:%d] (Red)[HP:%d, Score:%d]"),
 	//	NowRound+1, RedHP, RedScore, GreenHP, GreenScore);
@@ -605,11 +605,51 @@ void CGameFramework::CheckGameOver()
 			wstr += L"플레이어 2 (레드) 승리 \n\n";
 		wstr += L"플레이어 1 (그린) 점수: " + std::to_wstring(int(m_pScene->m_ppTankObjects[1]->m_nScore)) + L" 점\n";
 		wstr += L"플레이어 2 (레드) 점수: " + std::to_wstring(int(m_pScene->m_ppTankObjects[0]->m_nScore)) + L" 점\n\n";
-		wstr += L"총 라운드 수: " + std::to_wstring(m_pScene->m_nNowRound) + L" (3점 내기)\n\n";
+		wstr += L"총 라운드 수: " + std::to_wstring(m_pScene->m_nCurrentRound) + L" (3점 내기)\n\n";
 
 		LPTSTR s = new TCHAR[wstr.size() + 1];
 		_tcscpy(s, LPTSTR(wstr.c_str()));
 		MessageBox(m_hWnd, s, _T("Game Over"), NULL);
 		PostQuitMessage(0);
 	}
+}
+
+void CGameFramework::ApplySceneInfo()
+{
+	for (int i = 0; i < 2; ++i) {
+		// Tank
+		XMFLOAT3 xmf3TankPosition{ m_ResponseMessage.xmf2TankPosition[i].x, 0.0f, m_ResponseMessage.xmf2TankPosition[i].y };
+		m_pScene->m_ppTankObjects[i]->SetPosition(xmf3TankPosition);
+
+		XMFLOAT3 xmf3TankVelocity{ m_ResponseMessage.xmf2TankVelocity[i].x, 0.0f, m_ResponseMessage.xmf2TankVelocity[i].y };
+		m_pScene->m_ppTankObjects[i]->SetVelocity(xmf3TankVelocity);
+
+		XMFLOAT3 xmf3TankLook{ m_ResponseMessage.xmf2TankLook[i].x, 0.0f, m_ResponseMessage.xmf2TankLook[i].y };
+		m_pScene->m_ppTankObjects[i]->SetLook(xmf3TankLook);
+		m_pScene->m_ppTankObjects[i]->SetRightByLook();
+
+		m_pScene->m_ppTankObjects[i]->SetHP(m_ResponseMessage.nPlayerHP[i]);
+		m_pScene->m_ppTankObjects[i]->m_nScore = m_ResponseMessage.nPlayerScore[i];
+
+		// Bullet
+		for (int j = 0; j < 10; ++j) {
+			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetActive(m_ResponseMessage.bBulletsActive[i * 10 + j]);
+
+			XMFLOAT3 xmf3BulletPosition{ m_ResponseMessage.xmf2BulletsPosition[i * 10 + j].x, 1.2f, m_ResponseMessage.xmf2BulletsPosition[i * 10 + j].y };
+			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetPosition(xmf3BulletPosition);
+
+		}
+	}
+	
+	// Item
+	for (int i = 0; i < 6; ++i) {
+		((CItemObject*)m_pScene->m_ppGameObjects[i + 106])->SetActive(m_ResponseMessage.bItemsActive[i]);
+		((CItemObject*)m_pScene->m_ppGameObjects[i + 106])->SetPosition(m_ResponseMessage.xmf3ItemsPosition[i]);
+	}
+
+	// Round
+	m_pScene->m_nCurrentRound = m_ResponseMessage.nCurrentRound;
+	
+	// GameOver
+	m_pScene->m_bIsGameOver = m_ResponseMessage.bIsGameOver;
 }

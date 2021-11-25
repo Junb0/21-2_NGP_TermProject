@@ -84,7 +84,7 @@ public:
 	int							m_nLights = 0;
 
 	int							m_nLastRound = 3;
-	int							m_nNowRound = 0;
+	int							m_nCurrentRound = 0;
 
 	bool						m_bIsRoundOver = false;
 	bool						m_bIsGameOver = false;
