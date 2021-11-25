@@ -46,8 +46,9 @@ void CGameFramework::ReleaseObjects()
 void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
+	m_ResponseMessage.bIsGameOver = true;
 
-	system("cls");
+	//system("cls");
 	for (int i = 0; i < 3; ++i) {
 		RequestMessage* pTmp = GetRequestMessage(i);
 		printf("id: %d, Accel: %d, Deccel: %d, RotateL: %d, RotateR: %d, Fire: %d\n",

@@ -99,16 +99,16 @@ DWORD WINAPI SendThread(LPVOID arg)
 	// 클라이언트로부터 데이터 받기
 	while (1) {
 		// 게임루프의 쓰기 완료 대기
-		retval = WaitForSingleObject(hSendBufferWriteEvent, 33);
+		retval = WaitForSingleObject(hSendBufferWriteEvent, INFINITE);
 		if (retval == WAIT_TIMEOUT) continue;
 
 
-		// 3개의 클라이언트에게 sendbuf 송신
+		// 3개의 클라이언트에게 ResponseMessage 송신
 		for (int i = 0; i < 3; ++i)
 		{
 			retval = send(client_socks[i], (const char*)gGameFramework.GetResponseMessage(), sizeof(ResponseMessage), NULL);
 		}
-		ZeroMemory(gGameFramework.GetResponseMessage(), sizeof(ResponseMessage));
+		//ZeroMemory(gGameFramework.GetResponseMessage(), sizeof(ResponseMessage));
 
 		// 읽기 완료 알림
 		SetEvent(hSendBufferReadEvent);
@@ -196,15 +196,20 @@ int main(int argc, char *argv[]) {
 		retval = WaitForSingleObject(hRecvThreadEvent[3], 33);
 		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[0]);
 
+		retval = WaitForSingleObject(hSendBufferReadEvent, 33);
+
 		gGameFramework.FrameAdvance();
 
 		// 0번 스레드 이벤트를 신호 상태로
 		SetEvent(hRecvThreadEvent[0]);
+		
+		// Send 스레드 이벤트 신호 상태로
+		SetEvent(hSendBufferWriteEvent);
 	}
 
 	//이벤트 제거
-	//CloseHandle(hRecvBufferWriteEvent);
-	//CloseHandle(hRecvBufferReadEvent);
+	CloseHandle(hSendBufferWriteEvent);
+	CloseHandle(hSendBufferReadEvent);
 	for (int i = 0; i < 4; ++i) {
 		CloseHandle(hRecvThreadEvent[i]);
 	}
