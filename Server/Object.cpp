@@ -3,7 +3,7 @@
 
 CGameObject::CGameObject() {
 	m_xmf4x4Transform = Matrix4x4::Identity();
-	m_xmf4x4Wrold = Matrix4x4::Identity();
+	m_xmf4x4World = Matrix4x4::Identity();
 }
 
 CGameObject::~CGameObject() {
@@ -12,7 +12,7 @@ CGameObject::~CGameObject() {
 
 void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent) {
 	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
-	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4Wrold);
+	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
 }
 
 void CGameObject::SetChild(CGameObject* pChild, bool bReferenceUpdate)
@@ -179,6 +179,28 @@ CGameObject* CGameObject::LoadGeometryFromFile(char* pstrFileName)
 	return(pGameObject);
 }
 
+void CGameObject::SetPosition(float x, float y, float z)
+{
+	m_xmf4x4Transform._41 = x;
+	m_xmf4x4Transform._42 = y;
+	m_xmf4x4Transform._43 = z;
+
+//	UpdateTransform(NULL);
+}
+
+void CGameObject::SetPosition(XMFLOAT3 xmf3Position)
+{
+	SetPosition(xmf3Position.x, xmf3Position.y, xmf3Position.z);
+}
+
+void CGameObject::SetScale(float x, float y, float z)
+{
+	XMMATRIX mtxScale = XMMatrixScaling(x, y, z);
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxScale, m_xmf4x4Transform);
+
+//	UpdateTransform(NULL);
+}
+
 
 CTankObject::CTankObject()
 {
@@ -209,6 +231,30 @@ CTankObject::CTankObject()
 
 	m_bIsDead = false;
 	m_nHP = 100;
+
+	BuildBullets(10);
+}
+
+void CTankObject::BuildBullets(int nBullets)
+{
+
+	m_nBullets = nBullets;
+	m_ppBullets = new CBulletObject * [m_nBullets];
+	for (int i = 0; i < m_nBullets; i++)
+	{
+		CBulletObject* pBulletObject = NULL;
+		CGameObject* pNewBulletModel = NULL;
+
+		pNewBulletModel = CGameObject::LoadGeometryFromFile("Model/Shell.bin");
+
+		pBulletObject = new CBulletObject();
+		pBulletObject->SetChild(pNewBulletModel, true);
+		pBulletObject->SetPosition(0.0f, 100.0f, 0.0f);
+		pBulletObject->SetScale(1.0f, 1.0f, 1.0f);
+		pBulletObject->SetActive(false);
+
+		m_ppBullets[i] = pBulletObject;
+	}
 }
 
 CTankObject::~CTankObject()
@@ -323,4 +369,35 @@ void CTankObject::Update(float fTimeElapsed)
 
 	if (m_fFireWaitingTime > 0.0f) m_fFireWaitingTime -= fTimeElapsed;
 
+}
+
+CBulletObject::CBulletObject()
+{
+	m_fBulletEffectiveRange = 30.0f;
+	m_fSpeed = 30.0f;
+	m_bIsActive = false;
+	m_xmf3FirePosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_nDamage = 7;
+	m_fKnockBackPower = 20.0f;
+}
+
+CBulletObject::~CBulletObject()
+{
+
+}
+
+void CBulletObject::Update(float fTimeElapsed)
+{
+	XMFLOAT3 xmf3Position = GetPosition();
+	XMFLOAT3 xmf3Look = GetLook();
+	xmf3Position = Vector3::Add(xmf3Position, xmf3Look, m_fSpeed * fTimeElapsed);
+	SetPosition(xmf3Position);
+
+	if (Vector3::Distance(m_xmf3FirePosition, GetPosition()) > m_fBulletEffectiveRange) SetActive(false);
+}
+
+void CBulletObject::SetFirePosition(XMFLOAT3 xmf3FirePosition)
+{
+	m_xmf3FirePosition = xmf3FirePosition;
+	SetPosition(xmf3FirePosition);
 }
