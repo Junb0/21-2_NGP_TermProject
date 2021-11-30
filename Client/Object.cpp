@@ -1057,7 +1057,5 @@ void CItemObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		if (GetPosition().y < 1.5f) MoveUp(1.5f * fTimeElapsed);
 		CRotatingObject::Animate(fTimeElapsed, pxmf4x4Parent);
 	}
-	else m_fUntilActive -= fTimeElapsed;
-	if (m_fUntilActive <= 0.0f) m_bIsActive = true;
 }
 
