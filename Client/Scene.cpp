@@ -38,7 +38,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
    BuildDefaultLightsAndMaterials();
 
-   m_nTankObjects = 2;
+   m_nTankObjects = 3;
    m_ppTankObjects = new CTankObject* [m_nTankObjects];
 
    CGameObject* pTankModelGreen = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/GreenTank.bin");
@@ -73,6 +73,22 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
    pTankObject->SetKey('W', 'S', 'A', 'D', VK_SPACE);
    pTankObject->BuildBullets(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
    m_ppTankObjects[1] = pTankObject;
+
+  
+   pTankObject = new CTankObject();
+   pTankObject->SetChild(pTankModelGreen, true);			// 임의의 모델
+   pTankObject->OnInitialize();
+   pTankObject->SetPosition(XMFLOAT3(9.0f, 0.0f, 10.0f));	// 임의의 위치
+   pTankObject->SetScaleVar(1.0f, 1.0f, 1.0f);
+   pTankObject->Rotate(0.0f, 90.0f, 0.0f);					// 임의의 각도
+   pTankObject->SetFriction(40.0f);
+   pTankObject->SetMaxVelocityXZ(12.0f);
+   pTankObject->SetAccelSpeedXZ(70.0f);
+   pTankObject->SetSpeedRotateY(180.0f);
+   pTankObject->SetKey('I', 'K', 'J', 'L', 'P');
+   pTankObject->BuildBullets(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
+   m_ppTankObjects[2] = pTankObject;
+
 
    map<char*, char*> modelDictionary;
 
