@@ -78,7 +78,7 @@ bool CScene::ProcessInput(DWORD dwDirection, bool bIsRotateLeft, bool bIsRotateR
 	{
 		if (bIsRotateLeft) m_ppTankObjects[nTankIndex]->Rotate(0.0f, -m_ppTankObjects[nTankIndex]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
 		if (bIsRotateRight) m_ppTankObjects[nTankIndex]->Rotate(0.0f, m_ppTankObjects[nTankIndex]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
-		//if (bIsFire) m_TankObjects[nTankIndex].FireBullet();
+		if (bIsFire) m_ppTankObjects[nTankIndex]->FireBullet();
 		if (dwDirection) m_ppTankObjects[nTankIndex]->Move(dwDirection, m_ppTankObjects[nTankIndex]->GetAccelSpeedXZ() * fTimeElapsed, true);
 	}
 	m_ppTankObjects[nTankIndex]->Update(fTimeElapsed);

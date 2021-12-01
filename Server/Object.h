@@ -168,4 +168,5 @@ public:
 
 	void Update(float fTimeElapsed);
 
+	void FireBullet();
 };

@@ -369,6 +369,43 @@ void CTankObject::Update(float fTimeElapsed)
 
 	if (m_fFireWaitingTime > 0.0f) m_fFireWaitingTime -= fTimeElapsed;
 
+	for (int i = 0; i < m_nBullets; i++)
+		if (m_ppBullets[i]->GetActive())
+			m_ppBullets[i]->Update(fTimeElapsed);
+}
+
+void CTankObject::FireBullet()
+{
+	if (m_fFireWaitingTime > 0.0f)
+		return;
+
+	CBulletObject* pBulletObject = NULL;
+	for (int i = 0; i < m_nBullets; i++)
+	{
+		if (!(m_ppBullets[i]->GetActive()))
+		{
+			pBulletObject = m_ppBullets[i];
+			break;
+		}
+	}
+
+	if (pBulletObject)
+	{
+		pBulletObject->SetDamage(m_nBulletDamage);
+
+		XMFLOAT3 xmf3Position = GetPosition();
+		XMFLOAT3 xmf3Direction = GetLook();
+		XMFLOAT3 xmf3Up = GetUp();
+		XMFLOAT3 xmf3FirePosition = Vector3::Add(Vector3::ScalarProduct(xmf3Direction, -0.8f, false), Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Up, 1.2f, false)));
+
+		pBulletObject->m_xmf4x4Transform = m_xmf4x4Transform;
+
+		pBulletObject->SetFirePosition(xmf3FirePosition);
+		pBulletObject->SetActive(true);
+
+		m_fFireWaitingTime = m_fFireDelayTime * m_fGuaranteeFireDelayTime;
+
+	}
 }
 
 CBulletObject::CBulletObject()
