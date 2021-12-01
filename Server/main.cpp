@@ -198,6 +198,7 @@ int main(int argc, char *argv[]) {
 
 		retval = WaitForSingleObject(hSendBufferReadEvent, 33);
 
+		gGameFramework.ProcessInput();
 		gGameFramework.FrameAdvance();
 		gGameFramework.SetResponseMessage();
 
