@@ -17,7 +17,7 @@ public:
 public:
 	int m_nGameObjects = 0;
 	CGameObject** m_ppGameObjects = NULL;
-	CTankObject m_TankObjects[3];
+	CTankObject** m_TankObjects = NULL;
 
 	float m_fElapsedTime = 0.0f;
 };
