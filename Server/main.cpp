@@ -199,6 +199,7 @@ int main(int argc, char *argv[]) {
 		retval = WaitForSingleObject(hSendBufferReadEvent, 33);
 
 		gGameFramework.FrameAdvance();
+		gGameFramework.SetResponseMessage();
 
 		// 0번 스레드 이벤트를 신호 상태로
 		SetEvent(hRecvThreadEvent[0]);
