@@ -275,6 +275,8 @@ public:
 
 	void SetActive(bool bIsActive) { m_bIsActive = bIsActive; }
 	void SetFirePosition(XMFLOAT3 xmf3FirePosition);
+	void SetLook(const XMFLOAT3& xmf3Look);
+	void SetRightByLook();
 	void SetDamage(int nDamage) { m_nDamage = nDamage; }
 	void SetKnockBackPower(float fKnockBackPower) { m_fKnockBackPower = fKnockBackPower; }
 

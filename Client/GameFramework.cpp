@@ -634,10 +634,12 @@ void CGameFramework::ApplySceneInfo()
 		// Bullet
 		for (int j = 0; j < 10; ++j) {
 			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetActive(m_ResponseMessage.bBulletsActive[i * 10 + j]);
-
+				
 			XMFLOAT3 xmf3BulletPosition{ m_ResponseMessage.xmf2BulletsPosition[i * 10 + j].x, 1.2f, m_ResponseMessage.xmf2BulletsPosition[i * 10 + j].y };
 			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetPosition(xmf3BulletPosition);
 
+			XMFLOAT3 xmf3BulletLook{ m_ResponseMessage.xmf2BulletsLook[i * 10 + j].x, 0.0f, m_ResponseMessage.xmf2BulletsLook[i * 10 + j].y };
+			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetLook(xmf3BulletLook);
 		}
 	}
 	

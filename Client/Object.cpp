@@ -1030,6 +1030,21 @@ void CBulletObject::SetFirePosition(XMFLOAT3 xmf3FirePosition)
 	SetPosition(xmf3FirePosition);
 }
 
+void CBulletObject::SetLook(const XMFLOAT3& xmf3Look)
+{
+	m_xmf4x4World._31 = xmf3Look.x;
+	m_xmf4x4World._32 = xmf3Look.y;
+	m_xmf4x4World._33 = xmf3Look.z;
+}
+
+void CBulletObject::SetRightByLook()
+{
+	XMFLOAT3 xmf3Right = Vector3::CrossProduct(GetUp(), GetLook(), true);
+	m_xmf4x4World._11 = xmf3Right.x;
+	m_xmf4x4World._12 = xmf3Right.y;
+	m_xmf4x4World._13 = xmf3Right.z;
+}
+
 CItemObject::CItemObject()
 {
 	m_bIsItem = true;
