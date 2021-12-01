@@ -196,10 +196,10 @@ int main(int argc, char *argv[]) {
 		retval = WaitForSingleObject(hRecvThreadEvent[3], 33);
 		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[0]);
 
-		retval = WaitForSingleObject(hSendBufferReadEvent, 33);
-
 		gGameFramework.ProcessInput();
 		gGameFramework.FrameAdvance();
+
+		retval = WaitForSingleObject(hSendBufferReadEvent, INFINITE);
 		gGameFramework.SetResponseMessage();
 
 		// 0번 스레드 이벤트를 신호 상태로
