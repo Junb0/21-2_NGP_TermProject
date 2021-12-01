@@ -243,12 +243,12 @@ void CTankObject::BuildBullets(int nBullets)
 	for (int i = 0; i < m_nBullets; i++)
 	{
 		CBulletObject* pBulletObject = NULL;
-		CGameObject* pNewBulletModel = NULL;
+		//CGameObject* pNewBulletModel = NULL;
 
-		pNewBulletModel = CGameObject::LoadGeometryFromFile("Model/Shell.bin");
+		//pNewBulletModel = CGameObject::LoadGeometryFromFile("Model/Shell.bin");
 
 		pBulletObject = new CBulletObject();
-		pBulletObject->SetChild(pNewBulletModel, true);
+		//pBulletObject->SetChild(pNewBulletModel, true);
 		pBulletObject->SetPosition(0.0f, 100.0f, 0.0f);
 		pBulletObject->SetScale(1.0f, 1.0f, 1.0f);
 		pBulletObject->SetActive(false);
