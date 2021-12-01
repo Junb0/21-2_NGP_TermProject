@@ -99,14 +99,14 @@ void CGameFramework::SetRequestMessage(int id, char* pRecvBuff)
 
 void CGameFramework::ProcessInput()
 {
+	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
 	for (int i = 0; i < 3; ++i)
 	{
 		DWORD dwDirection = 0;
 
 		if (m_RequestMessages[i].bIsAccel) dwDirection |= DIR_FORWARD;
 		if (m_RequestMessages[i].bIsDeccel) dwDirection |= DIR_BACKWARD;
-		if (m_RequestMessages[i].bIsRotateLeft) dwDirection |= DIR_LEFT;
-		if (m_RequestMessages[i].bIsRotateRight) dwDirection |= DIR_RIGHT;
-	}
 
+		m_pScene->ProcessInput(dwDirection, m_RequestMessages[i].bIsRotateLeft, m_RequestMessages[i].bIsRotateRight, m_RequestMessages[i].bIsFire, i, fTimeElapsed);
+	}
 }
