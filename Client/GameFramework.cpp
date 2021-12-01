@@ -616,7 +616,7 @@ void CGameFramework::CheckGameOver()
 
 void CGameFramework::ApplySceneInfo()
 {
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		// Tank
 		XMFLOAT3 xmf3TankPosition{ m_ResponseMessage.xmf2TankPosition[i].x, 0.0f, m_ResponseMessage.xmf2TankPosition[i].y };
 		m_pScene->m_ppTankObjects[i]->SetPosition(xmf3TankPosition);
