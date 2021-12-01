@@ -55,6 +55,7 @@ public:
 	void CheckGameOver();
 
 	void SetRequestMessage(int id, char* pRecvBuff);
+	void SetResponseMessage(CTankObject* m_TankObjects);
 	
 	RequestMessage* GetRequestMessage(int id) { return &m_RequestMessages[id]; }
 	ResponseMessage* GetResponseMessage() { return &m_ResponseMessage; }

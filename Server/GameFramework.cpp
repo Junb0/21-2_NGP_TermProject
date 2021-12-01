@@ -7,7 +7,7 @@
 
 CGameFramework::CGameFramework()
 {
-	//m_pScene = NULL;
+	m_pScene = NULL;
 }
 
 CGameFramework::~CGameFramework()
@@ -31,22 +31,24 @@ void CGameFramework::OnDestroy()
 
 void CGameFramework::BuildObjects()
 {
-	//m_pScene = new CScene();
-	//if (m_pScene) m_pScene->BuildObjects();
+	m_pScene = new CScene();
+	if (m_pScene) m_pScene->BuildObjects();
+
+
 
 	m_GameTimer.Reset();
 }
 
 void CGameFramework::ReleaseObjects()
 {
-	//if (m_pScene) m_pScene->ReleaseObjects();
-	//if (m_pScene) delete m_pScene;
+	if (m_pScene) m_pScene->ReleaseObjects();
+	if (m_pScene) delete m_pScene;
 }
 
 void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
-	m_ResponseMessage.bIsGameOver = true;
+	//m_ResponseMessage.bIsGameOver = true;
 
 	//system("cls");
 	for (int i = 0; i < 3; ++i) {
@@ -56,7 +58,7 @@ void CGameFramework::AnimateObjects()
 	}
 	//cout << "AnimateObjects ½ÇÇà, fTimeElapsed : " << fTimeElapsed << endl;
 
-	//if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);
+	if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);
 }
 
 void CGameFramework::FrameAdvance()
@@ -95,6 +97,37 @@ void CGameFramework::SetRequestMessage(int id, char* pRecvBuff)
 	m_RequestMessages[id].bIsRotateLeft = (bool)pRecvBuff[2];
 	m_RequestMessages[id].bIsRotateRight = (bool)pRecvBuff[3];
 	m_RequestMessages[id].bIsFire = (bool)pRecvBuff[4];
+}
+
+void CGameFramework::SetResponseMessage(CTankObject* m_TankObjects)
+{
+	for (int i = 0; i < 3; ++i) {
+		m_ResponseMessage.xmf2TankPosition[i] = XMFLOAT2(m_TankObjects[i].GetPosition().x, m_TankObjects[i].GetPosition().z);
+		m_ResponseMessage.xmf2TankLook[i] = XMFLOAT2(m_TankObjects[i].GetLookVector().x, m_TankObjects[i].GetLookVector().z);
+		m_ResponseMessage.xmf2TankVelocity[i] = XMFLOAT2(m_TankObjects[i].GetVelocity().x, m_TankObjects[i].GetVelocity().z);
+
+		m_ResponseMessage.nPlayerHP[i] = m_TankObjects[i].GetHP();
+		m_ResponseMessage.nPlayerScore[i] = m_TankObjects[i].m_nScore;
+
+		
+		for (int j = 0; j < 10; ++j) {
+			m_ResponseMessage.bBulletsActive[i * 10 + j] = m_TankObjects[i].m_ppBullets[j]->GetActive();
+			m_ResponseMessage.xmf2BulletsPosition[i * 10 + j] = XMFLOAT2(m_TankObjects[i].m_ppBullets[j]->GetPosition().x, m_TankObjects[i].m_ppBullets[j]->GetPosition().z);
+			m_ResponseMessage.xmf2BulletsLook[i * 10 + j] = XMFLOAT2(m_TankObjects[i].m_ppBullets[j]->GetLook().x, m_TankObjects[i].m_ppBullets[j]->GetLook().z);
+		}
+		
+	}
+
+	/*
+	for (int i = 0; i < 6; ++i) {
+		m_ResponseMessage.bItemsActive[6]
+		m_ResponseMessage.xmf3ItemsPosition[6]
+	}
+	*/
+
+	//m_ResponseMessage.nCurrentRound = ;
+
+	//m_ResponseMessage.bIsGameOver = ;
 }
 
 void CGameFramework::ProcessInput()
