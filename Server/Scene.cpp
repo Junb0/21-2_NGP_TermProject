@@ -14,7 +14,7 @@ void CScene::BuildObjects() {
 	//CGameObject* pTankModelGreen = CGameObject::LoadGeometryFromFile("Model/GreenTank.bin");
 	//CGameObject* pTankModelRed = CGameObject::LoadGeometryFromFile("Model/RedTank.bin");
 	
-	m_TankObjects = new CTankObject * [3];
+	m_ppTankObjects = new CTankObject * [3];
 
 	CTankObject* pTankObject = NULL;
 
@@ -29,7 +29,7 @@ void CScene::BuildObjects() {
 	pTankObject->SetAccelSpeedXZ(70.0f);
 	pTankObject->SetSpeedRotateY(180.0f);
 	pTankObject->BuildBullets();
-	m_TankObjects[0] = pTankObject;
+	m_ppTankObjects[0] = pTankObject;
 
 
 	pTankObject = new CTankObject();
@@ -43,7 +43,7 @@ void CScene::BuildObjects() {
 	pTankObject->SetAccelSpeedXZ(70.0f);
 	pTankObject->SetSpeedRotateY(180.0f);
 	pTankObject->BuildBullets();
-	m_TankObjects[1] = pTankObject;
+	m_ppTankObjects[1] = pTankObject;
 
 
 	pTankObject = new CTankObject();
@@ -57,7 +57,7 @@ void CScene::BuildObjects() {
 	pTankObject->SetAccelSpeedXZ(70.0f);
 	pTankObject->SetSpeedRotateY(180.0f);
 	pTankObject->BuildBullets();
-	m_TankObjects[2] = pTankObject;
+	m_ppTankObjects[2] = pTankObject;
 	
 }
 
@@ -73,14 +73,14 @@ void CScene::AnimateObjects(float fTimeElapsed) {
 bool CScene::ProcessInput(DWORD dwDirection, bool bIsRotateLeft, bool bIsRotateRight, bool bIsFire, int nTankIndex, float fTimeElapsed)
 {
 
-	if (!m_TankObjects[nTankIndex]->GetDead())
+	if (!m_ppTankObjects[nTankIndex]->GetDead())
 	{
-		if (bIsRotateLeft) m_TankObjects[nTankIndex]->Rotate(0.0f, -m_TankObjects[nTankIndex]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
-		if (bIsRotateRight) m_TankObjects[nTankIndex]->Rotate(0.0f, m_TankObjects[nTankIndex]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
+		if (bIsRotateLeft) m_ppTankObjects[nTankIndex]->Rotate(0.0f, -m_ppTankObjects[nTankIndex]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
+		if (bIsRotateRight) m_ppTankObjects[nTankIndex]->Rotate(0.0f, m_ppTankObjects[nTankIndex]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
 		//if (bIsFire) m_TankObjects[nTankIndex].FireBullet();
-		if (dwDirection) m_TankObjects[nTankIndex]->Move(dwDirection, m_TankObjects[nTankIndex]->GetAccelSpeedXZ() * fTimeElapsed, true);
+		if (dwDirection) m_ppTankObjects[nTankIndex]->Move(dwDirection, m_ppTankObjects[nTankIndex]->GetAccelSpeedXZ() * fTimeElapsed, true);
 	}
-	m_TankObjects[nTankIndex]->Update(fTimeElapsed);
+	m_ppTankObjects[nTankIndex]->Update(fTimeElapsed);
 
 	return(true);
 }
