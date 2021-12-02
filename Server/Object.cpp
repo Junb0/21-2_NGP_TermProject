@@ -181,9 +181,13 @@ CGameObject* CGameObject::LoadGeometryFromFile(char* pstrFileName)
 
 void CGameObject::SetPosition(float x, float y, float z)
 {
-	m_xmf4x4Transform._41 = x;
-	m_xmf4x4Transform._42 = y;
-	m_xmf4x4Transform._43 = z;
+	//m_xmf4x4Transform._41 = x;
+	//m_xmf4x4Transform._42 = y;
+	//m_xmf4x4Transform._43 = z;
+
+	m_xmf4x4World._41 = x;
+	m_xmf4x4World._42 = y;
+	m_xmf4x4World._43 = z;
 
 //	UpdateTransform(NULL);
 }
@@ -391,6 +395,11 @@ void CTankObject::FireBullet()
 
 	if (pBulletObject)
 	{
+		m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
+		m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
+		m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
+		m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
+
 		pBulletObject->SetDamage(m_nBulletDamage);
 
 		XMFLOAT3 xmf3Position = GetPosition();
@@ -398,7 +407,7 @@ void CTankObject::FireBullet()
 		XMFLOAT3 xmf3Up = GetUp();
 		XMFLOAT3 xmf3FirePosition = Vector3::Add(Vector3::ScalarProduct(xmf3Direction, -0.8f, false), Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Up, 1.2f, false)));
 
-		pBulletObject->m_xmf4x4Transform = m_xmf4x4Transform;
+		pBulletObject->m_xmf4x4World = m_xmf4x4World;
 
 		pBulletObject->SetFirePosition(xmf3FirePosition);
 		pBulletObject->SetActive(true);
