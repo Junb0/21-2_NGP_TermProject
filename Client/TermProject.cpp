@@ -8,6 +8,7 @@
 #pragma comment(lib, "ws2_32")
 #include <WinSock2.h>
 #define SERVERIP "127.0.0.1"
+//#define SERVERIP "192.168.21.49"
 #define SERVERPORT 12050
 //
 
@@ -61,6 +62,29 @@ void err_display(char* msg)
 	LocalFree(lpMsgBuf);
 }
 
+// 사용자 정의 데이터 수신 함수
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+	int received;
+	char* ptr = buf;
+	int left = len;
+
+	while (left > 0) {
+		received = recv(s, ptr, left, flags);
+		if (received == SOCKET_ERROR) {
+			return SOCKET_ERROR;
+		}
+		else if (received == 0)
+			break;
+
+		left -= received;
+		ptr += received;
+	}
+
+	return len - left;
+}
+
+
 DWORD WINAPI SendThread(LPVOID arg)
 {
 	SOCKET sock = (SOCKET)arg;
@@ -106,8 +130,8 @@ DWORD WINAPI RecvThread(LPVOID arg)
 
 	// 서버에게 데이터 받기
 	while (1) {
-		ZeroMemory(&rpSceneInfo, sizeof(rpSceneInfo));
-		retval = recv(sock, (char*)&rpSceneInfo, sizeof(rpSceneInfo), 0);
+		//ZeroMemory(&rpSceneInfo, sizeof(rpSceneInfo));
+		retval = recvn(sock, (char*)&rpSceneInfo, sizeof(rpSceneInfo), 0);
 
 		EnterCriticalSection(&csResponseSceneBufferAccess);
 		gGameFramework.SetResponseMessage(rpSceneInfo);
