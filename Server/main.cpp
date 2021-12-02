@@ -42,6 +42,29 @@ void err_display(char* msg)
 	LocalFree(lpMsgBuf);
 }
 
+// 사용자 정의 데이터 수신 함수
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+	int received;
+	char* ptr = buf;
+	int left = len;
+
+	while (left > 0) {
+		received = recv(s, ptr, left, flags);
+		if (received == SOCKET_ERROR) {
+			return SOCKET_ERROR;
+		}
+		else if (received == 0)
+			break;
+
+		left -= received;
+		ptr += received;
+	}
+
+	return len - left;
+}
+
+
 DWORD WINAPI RecvThread(LPVOID arg)
 {
 	SOCKET client_sock = (SOCKET)arg;
@@ -64,7 +87,7 @@ DWORD WINAPI RecvThread(LPVOID arg)
 		ZeroMemory(&recvbuf, sizeof(recvbuf));
 
 		// 데이터 수신 및 각 탱크의 RequestMessage버퍼에 저장
-		retval = recv(client_sock, recvbuf, RECVBUFSIZE, 0);
+		retval = recvn(client_sock, recvbuf, RECVBUFSIZE, 0);
 		gGameFramework.SetRequestMessage(threadID, recvbuf);
 		
 		// 순서 제어 확인

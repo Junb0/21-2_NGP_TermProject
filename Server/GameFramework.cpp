@@ -51,11 +51,11 @@ void CGameFramework::AnimateObjects()
 	//m_ResponseMessage.bIsGameOver = true;
 
 	//system("cls");
-	for (int i = 0; i < 3; ++i) {
-		RequestMessage* pTmp = GetRequestMessage(i);
-		printf("id: %d, Accel: %d, Deccel: %d, RotateL: %d, RotateR: %d, Fire: %d\n",
-			i, pTmp->bIsAccel, pTmp->bIsDeccel, pTmp->bIsRotateLeft, pTmp->bIsRotateRight, pTmp->bIsFire);
-	}
+	//for (int i = 0; i < 3; ++i) {
+	//	RequestMessage* pTmp = GetRequestMessage(i);
+	//	printf("id: %d, Accel: %d, Deccel: %d, RotateL: %d, RotateR: %d, Fire: %d\n",
+	//		i, pTmp->bIsAccel, pTmp->bIsDeccel, pTmp->bIsRotateLeft, pTmp->bIsRotateRight, pTmp->bIsFire);
+	//}
 	//cout << "AnimateObjects ½ÇÇà, fTimeElapsed : " << fTimeElapsed << endl;
 
 	if (m_pScene) m_pScene->AnimateObjects(fTimeElapsed);
