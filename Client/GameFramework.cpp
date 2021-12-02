@@ -640,6 +640,8 @@ void CGameFramework::ApplySceneInfo()
 
 			XMFLOAT3 xmf3BulletLook{ m_ResponseMessage.xmf2BulletsLook[i * 10 + j].x, 0.0f, m_ResponseMessage.xmf2BulletsLook[i * 10 + j].y };
 			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetLook(xmf3BulletLook);
+			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetRightByLook();
+			m_pScene->m_ppTankObjects[i]->m_ppBullets[j]->SetTransformByWorld();
 		}
 	}
 	

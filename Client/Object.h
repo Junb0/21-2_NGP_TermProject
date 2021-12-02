@@ -277,6 +277,7 @@ public:
 	void SetFirePosition(XMFLOAT3 xmf3FirePosition);
 	void SetLook(const XMFLOAT3& xmf3Look);
 	void SetRightByLook();
+	void SetTransformByWorld() { m_xmf4x4Transform = m_xmf4x4World; }
 	void SetDamage(int nDamage) { m_nDamage = nDamage; }
 	void SetKnockBackPower(float fKnockBackPower) { m_fKnockBackPower = fKnockBackPower; }
 
