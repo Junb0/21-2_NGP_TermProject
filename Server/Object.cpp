@@ -417,6 +417,24 @@ void CTankObject::FireBullet()
 	}
 }
 
+bool CTankObject::DamagedByBullet(CBulletObject* pBulletObject)
+{
+	XMFLOAT3 xmf3Look = pBulletObject->GetLook();
+	XMFLOAT3 xmf3KnockBack = Vector3::ScalarProduct(xmf3Look, pBulletObject->GetKnockBackPower());
+	Move(xmf3KnockBack, true);
+
+	int nNowHP = GetHP();
+	nNowHP -= pBulletObject->GetDamage();
+	SetHP(nNowHP);
+
+	if (GetHP() <= 0) {
+		SetHP(0);
+		SetDead(true);
+		return true;
+	}
+	return false;
+}
+
 CBulletObject::CBulletObject()
 {
 	m_fBulletEffectiveRange = 30.0f;
