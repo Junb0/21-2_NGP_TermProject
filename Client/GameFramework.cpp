@@ -429,17 +429,9 @@ void CGameFramework::ProcessInput()
 {
 	static UCHAR pKeysBuffer[256];
 	bool bProcessedByScene = false;
-	if (GetKeyboardState(pKeysBuffer) && m_pScene) //bProcessedByScene = m_pScene->ProcessInput(pKeysBuffer, m_GameTimer.GetTimeElapsed());
+	if (GetKeyboardState(pKeysBuffer) && m_pScene) m_pScene->SetCameraPosition(m_GameTimer.GetTimeElapsed());
 	if (!bProcessedByScene)
 	{
-		DWORD dwDirection = 0;
-		//if (pKeysBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		//if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		//if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		//if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		//if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		//if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
-
 		ZeroMemory(&m_RequestMessage, sizeof(m_RequestMessage));
 		if (pKeysBuffer[VK_UP] & 0xF0) m_RequestMessage.bIsAccel = true;
 		if (pKeysBuffer[VK_DOWN] & 0xF0) m_RequestMessage.bIsDeccel = true;
@@ -457,18 +449,6 @@ void CGameFramework::ProcessInput()
 			cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
 			SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
 		}
-
-		/*if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
-		{
-			if (cxDelta || cyDelta)
-			{
-				if (pKeysBuffer[VK_RBUTTON] & 0xF0)
-					m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
-				else
-					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
-			}
-			if (dwDirection) m_pPlayer->Move(dwDirection, 1.5f, true);
-		}*/
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }

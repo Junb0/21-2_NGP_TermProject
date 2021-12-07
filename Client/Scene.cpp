@@ -542,7 +542,7 @@ void CScene::CheckTankByObjectCollisions(float fTimeElapsed)
 	}
 }
 
-bool CScene::ProcessInput(UCHAR *pKeysBuffer, float fTimeElapsed)
+bool CScene::SetCameraPosition(float fTimeElapsed)
 {
 	float fTanksObjectsSumX = 0.0f;
 	float fTanksObjectsSumZ = 0.0f;
@@ -550,19 +550,9 @@ bool CScene::ProcessInput(UCHAR *pKeysBuffer, float fTimeElapsed)
 	{
 		if (!m_ppTankObjects[i]->GetDead())
 		{
-			DWORD dwDirection = 0;
-			if (pKeysBuffer[m_ppTankObjects[i]->m_nAccelKey] & 0xF0)
-				dwDirection |= DIR_FORWARD;
-			if (pKeysBuffer[m_ppTankObjects[i]->m_nDeccelKey] & 0xF0) dwDirection |= DIR_BACKWARD;
-			if (pKeysBuffer[m_ppTankObjects[i]->m_nLeftRotateKey] & 0xF0) m_ppTankObjects[i]->Rotate(0.0f, -m_ppTankObjects[i]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
-			if (pKeysBuffer[m_ppTankObjects[i]->m_nRightRotateKey] & 0xF0) m_ppTankObjects[i]->Rotate(0.0f, m_ppTankObjects[i]->GetSpeedRotateY() * fTimeElapsed, 0.0f);
-			if (pKeysBuffer[m_ppTankObjects[i]->m_nFireKey] & 0xF0) m_ppTankObjects[i]->FireBullet();
-
-			if (dwDirection) m_ppTankObjects[i]->Move(dwDirection, m_ppTankObjects[i]->GetAccelSpeedXZ() * fTimeElapsed, true);
 			fTanksObjectsSumX += m_ppTankObjects[i]->GetPosition().x;
 			fTanksObjectsSumZ += m_ppTankObjects[i]->GetPosition().z;
 		}
-		m_ppTankObjects[i]->Update(fTimeElapsed);
 	}
 
 	XMFLOAT3 xmf3Temp;
