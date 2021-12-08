@@ -33,6 +33,11 @@ public:
 
 	void SetChild(CGameObject* pChild, bool bReferenceUpdate = false);
 
+	CGameObject* GetParent() { return(m_pParent); }
+	void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent = NULL);
+
+	void UpdateBoundingBox();
+
 	XMFLOAT3 GetPosition(){ return(XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43)); }
 	XMFLOAT3 GetLook(){ return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33))); }
 	XMFLOAT3 GetUp(){ return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._21, m_xmf4x4World._22, m_xmf4x4World._23))); }
@@ -42,10 +47,15 @@ public:
 	void SetPosition(XMFLOAT3 xmf3Position);
 	void SetScale(float x, float y, float z);
 
+	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
+	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
+	void Rotate(XMFLOAT4* pxmf4Quaternion);
+
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
 
 public:
 	static CMeshLoadInfo* LoadMeshInfoFromFile(FILE* pInFile);
+	static void LoadMaterialsInfoFromFile(FILE* pInFile);
 
 	static CGameObject* LoadFrameHierarchyFromFile(FILE* pInFile);
 	static CGameObject* LoadGeometryFromFile(char* pstrFileName);

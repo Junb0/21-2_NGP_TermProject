@@ -11,6 +11,7 @@ CGameObject::~CGameObject() {
 }
 
 void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent) {
+	UpdateBoundingBox();
 	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
 	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
 }
@@ -113,7 +114,7 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(FILE* pInFile)
 		}
 		else if (!strcmp(pstrToken, "<Materials>:"))
 		{
-			// 무시 (서버 응용프로그램에서 필요 없는 정보)
+			LoadMaterialsInfoFromFile(pInFile);
 		}
 		else if (!strcmp(pstrToken, "<Children>:"))
 		{
@@ -249,6 +250,65 @@ CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
 	return(pMeshInfo);
 }
 
+void CGameObject::LoadMaterialsInfoFromFile(FILE* pInFile)
+{
+	char pstrToken[64] = { '\0' };
+	UINT nReads = 0;
+
+	int nMaterial = 0;
+
+	XMFLOAT4 xmf4Temp;
+	float fTemp;
+
+	::ReadIntegerFromFile(pInFile);
+
+	for (; ; )
+	{
+		::ReadStringFromFile(pInFile, pstrToken);
+
+		if (!strcmp(pstrToken, "<Material>:"))
+		{
+			nMaterial = ::ReadIntegerFromFile(pInFile);
+		}
+		else if (!strcmp(pstrToken, "<AlbedoColor>:"))
+		{
+			nReads = (UINT)::fread(&xmf4Temp, sizeof(float), 4, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<EmissiveColor>:"))
+		{
+			nReads = (UINT)::fread(&xmf4Temp, sizeof(float), 4, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<SpecularColor>:"))
+		{
+			nReads = (UINT)::fread(&xmf4Temp, sizeof(float), 4, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Glossiness>:"))
+		{
+			nReads = (UINT)::fread(&fTemp, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Smoothness>:"))
+		{
+			nReads = (UINT)::fread(&fTemp, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Metallic>:"))
+		{
+			nReads = (UINT)::fread(&fTemp, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<SpecularHighlight>:"))
+		{
+			nReads = (UINT)::fread(&fTemp, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "<GlossyReflection>:"))
+		{
+			nReads = (UINT)::fread(&fTemp, sizeof(float), 1, pInFile);
+		}
+		else if (!strcmp(pstrToken, "</Materials>"))
+		{
+			break;
+		}
+	}
+}
+
 void CGameObject::PrintFrameInfo(CGameObject* pGameObject, CGameObject* pParent)
 {
 	TCHAR pstrDebug[256] = { 0 };
@@ -296,15 +356,15 @@ CGameObject* CGameObject::LoadGeometryFromFile(char* pstrFileName)
 
 void CGameObject::SetPosition(float x, float y, float z)
 {
-	//m_xmf4x4Transform._41 = x;
-	//m_xmf4x4Transform._42 = y;
-	//m_xmf4x4Transform._43 = z;
+	m_xmf4x4Transform._41 = x;
+	m_xmf4x4Transform._42 = y;
+	m_xmf4x4Transform._43 = z;
 
-	m_xmf4x4World._41 = x;
-	m_xmf4x4World._42 = y;
-	m_xmf4x4World._43 = z;
+	//m_xmf4x4World._41 = x;
+	//m_xmf4x4World._42 = y;
+	//m_xmf4x4World._43 = z;
 
-//	UpdateTransform(NULL);
+	UpdateTransform(NULL);
 }
 
 void CGameObject::SetPosition(XMFLOAT3 xmf3Position)
@@ -317,9 +377,50 @@ void CGameObject::SetScale(float x, float y, float z)
 	XMMATRIX mtxScale = XMMatrixScaling(x, y, z);
 	m_xmf4x4Transform = Matrix4x4::Multiply(mtxScale, m_xmf4x4Transform);
 
-//	UpdateTransform(NULL);
+	UpdateTransform(NULL);
 }
 
+
+void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
+{
+	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(fPitch), XMConvertToRadians(fYaw), XMConvertToRadians(fRoll));
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxRotate, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+void CGameObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)
+{
+	XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(pxmf3Axis), XMConvertToRadians(fAngle));
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxRotate, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+void CGameObject::Rotate(XMFLOAT4* pxmf4Quaternion)
+{
+	XMMATRIX mtxRotate = XMMatrixRotationQuaternion(XMLoadFloat4(pxmf4Quaternion));
+	m_xmf4x4Transform = Matrix4x4::Multiply(mtxRotate, m_xmf4x4Transform);
+
+	UpdateTransform(NULL);
+}
+
+void CGameObject::UpdateTransform(XMFLOAT4X4* pxmf4x4Parent)
+{
+	m_xmf4x4World = (pxmf4x4Parent) ? Matrix4x4::Multiply(m_xmf4x4Transform, *pxmf4x4Parent) : m_xmf4x4Transform;
+
+	if (m_pSibling) m_pSibling->UpdateTransform(pxmf4x4Parent);
+	if (m_pChild) m_pChild->UpdateTransform(&m_xmf4x4World);
+}
+
+void CGameObject::UpdateBoundingBox()
+{
+	if (m_pMesh)
+	{
+		m_pMesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+		XMStoreFloat4(&m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
+	}
+}
 
 CTankObject::CTankObject()
 {
@@ -362,12 +463,12 @@ void CTankObject::BuildBullets(int nBullets)
 	for (int i = 0; i < m_nBullets; i++)
 	{
 		CBulletObject* pBulletObject = NULL;
-		//CGameObject* pNewBulletModel = NULL;
+		CGameObject* pNewBulletModel = NULL;
 
-		//pNewBulletModel = CGameObject::LoadGeometryFromFile("Model/Shell.bin");
+		pNewBulletModel = CGameObject::LoadGeometryFromFile("Model/Shell.bin");
 
 		pBulletObject = new CBulletObject();
-		//pBulletObject->SetChild(pNewBulletModel, true);
+		pBulletObject->SetChild(pNewBulletModel, true);
 		pBulletObject->SetPosition(0.0f, 100.0f, 0.0f);
 		pBulletObject->SetScale(1.0f, 1.0f, 1.0f);
 		pBulletObject->SetActive(false);
@@ -510,10 +611,17 @@ void CTankObject::FireBullet()
 
 	if (pBulletObject)
 	{
-		m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
+		/*m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
 		m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
 		m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
-		m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
+		m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;*/
+
+		m_xmf4x4Transform._11 = m_xmf3Right.x; m_xmf4x4Transform._12 = m_xmf3Right.y; m_xmf4x4Transform._13 = m_xmf3Right.z;
+		m_xmf4x4Transform._21 = m_xmf3Up.x; m_xmf4x4Transform._22 = m_xmf3Up.y; m_xmf4x4Transform._23 = m_xmf3Up.z;
+		m_xmf4x4Transform._31 = m_xmf3Look.x; m_xmf4x4Transform._32 = m_xmf3Look.y; m_xmf4x4Transform._33 = m_xmf3Look.z;
+		m_xmf4x4Transform._41 = m_xmf3Position.x; m_xmf4x4Transform._42 = m_xmf3Position.y; m_xmf4x4Transform._43 = m_xmf3Position.z;
+
+		UpdateTransform(NULL);
 
 		pBulletObject->SetDamage(m_nBulletDamage);
 
@@ -522,7 +630,7 @@ void CTankObject::FireBullet()
 		XMFLOAT3 xmf3Up = GetUp();
 		XMFLOAT3 xmf3FirePosition = Vector3::Add(Vector3::ScalarProduct(xmf3Direction, -0.8f, false), Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Up, 1.2f, false)));
 
-		pBulletObject->m_xmf4x4World = m_xmf4x4World;
+		pBulletObject->m_xmf4x4Transform = m_xmf4x4Transform;
 
 		pBulletObject->SetFirePosition(xmf3FirePosition);
 		pBulletObject->SetActive(true);
@@ -570,7 +678,7 @@ void CBulletObject::Update(float fTimeElapsed)
 	XMFLOAT3 xmf3Position = GetPosition();
 	XMFLOAT3 xmf3Look = GetLook();
 	xmf3Position = Vector3::Add(xmf3Position, xmf3Look, m_fSpeed * fTimeElapsed);
-	SetPosition(xmf3Position);
+	CGameObject::SetPosition(xmf3Position);
 
 	if (Vector3::Distance(m_xmf3FirePosition, GetPosition()) > m_fBulletEffectiveRange) SetActive(false);
 }

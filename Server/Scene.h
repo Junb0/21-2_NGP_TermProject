@@ -14,6 +14,7 @@ public:
 
 	bool ProcessInput(DWORD dwDirection, bool bIsRotateLeft, bool bIsRotateRight, bool bIsFire, int nTankIndex, float fTimeElapsed);
 
+	void CheckObjectByBulletCollisions();
 	void CheckTankObjectByBulletCollisions();
 
 public:
