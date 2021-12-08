@@ -259,6 +259,7 @@ void CScene::AnimateObjects(float fTimeElapsed) {
 	for (int i = 0; i < m_nTankObjects; ++i) m_ppTankObjects[i]->Animate(fTimeElapsed, NULL);
 
 	if (!m_bIsRoundOver)CheckTankObjectByBulletCollisions();
+    CheckObjectByBulletCollisions();
 }
 
 bool CScene::ProcessInput(DWORD dwDirection, bool bIsRotateLeft, bool bIsRotateRight, bool bIsFire, int nTankIndex, float fTimeElapsed)
@@ -298,4 +299,29 @@ void CScene::CheckTankObjectByBulletCollisions()
 			}
 		}
 	}
+}
+
+void CScene::CheckObjectByBulletCollisions()
+{
+    CBulletObject** ppBullets = NULL;
+    for (int i = 0; i < m_nTankObjects; i++)
+    {
+        ppBullets = m_ppTankObjects[i]->m_ppBullets;
+        for (int j = 0; j < m_nGameObjects; j++)
+        {
+            if (!m_ppGameObjects[j]->m_bIsCollisionsPossible) continue;
+            if (m_ppGameObjects[j]->m_bIsItem) continue;
+            for (int k = 0; k < m_ppTankObjects[i]->m_nBullets; k++)
+            {
+                if (ppBullets[k]->GetActive())
+                {
+                    if (m_ppGameObjects[j]->m_pChild->m_xmOOBB.Intersects(ppBullets[k]->m_pChild->m_xmOOBB))//m_ppGameObjects[j]->HierarchyIntersects(ppBullets[k]))
+                    {
+                        ppBullets[k]->SetActive(false);
+                        //cout << j << "¿Í " << i << "ÅÊÅ©ÀÇ " << k << "¹øÂ° ÃÑ¾Ë Ãæµ¹" << endl;
+                    }
+                }
+            }
+        }
+    }
 }

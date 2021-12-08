@@ -496,6 +496,11 @@ void CTankObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		m_pTankTurret->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxTrnslate, m_pTankTurret->m_xmf4x4Transform);
 	}
 	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+
+	for (int i = 0; i < m_nBullets; ++i)
+	{
+		if (m_ppBullets[i]->GetActive()) m_ppBullets[i]->Animate(fTimeElapsed, NULL);
+	}
 }
 
 void CTankObject::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
