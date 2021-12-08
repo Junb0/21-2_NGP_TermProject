@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Mesh.h"
+
 #define DIR_FORWARD					0x01
 #define DIR_BACKWARD				0x02
 #define DIR_LEFT					0x04
@@ -13,6 +15,8 @@ public:
 public:
 	char m_pstrFrameName[64];
 
+	CMesh* m_pMesh = NULL;
+
 	XMFLOAT4X4 m_xmf4x4Transform;
 	XMFLOAT4X4 m_xmf4x4World;
 
@@ -24,6 +28,8 @@ public:
 
 	bool m_bIsCollisionsPossible = false;
 	bool m_bIsItem = false;
+
+	void SetMesh(CMesh* pMesh);
 
 	void SetChild(CGameObject* pChild, bool bReferenceUpdate = false);
 
@@ -39,6 +45,8 @@ public:
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
 
 public:
+	static CMeshLoadInfo* LoadMeshInfoFromFile(FILE* pInFile);
+
 	static CGameObject* LoadFrameHierarchyFromFile(FILE* pInFile);
 	static CGameObject* LoadGeometryFromFile(char* pstrFileName);
 	static void PrintFrameInfo(CGameObject* pGameObject, CGameObject* pParent);
