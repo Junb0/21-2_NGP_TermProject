@@ -621,12 +621,7 @@ void CTankObject::FireBullet()
 		m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
 		m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;*/
 
-		m_xmf4x4Transform._11 = m_xmf3Right.x; m_xmf4x4Transform._12 = m_xmf3Right.y; m_xmf4x4Transform._13 = m_xmf3Right.z;
-		m_xmf4x4Transform._21 = m_xmf3Up.x; m_xmf4x4Transform._22 = m_xmf3Up.y; m_xmf4x4Transform._23 = m_xmf3Up.z;
-		m_xmf4x4Transform._31 = m_xmf3Look.x; m_xmf4x4Transform._32 = m_xmf3Look.y; m_xmf4x4Transform._33 = m_xmf3Look.z;
-		m_xmf4x4Transform._41 = m_xmf3Position.x; m_xmf4x4Transform._42 = m_xmf3Position.y; m_xmf4x4Transform._43 = m_xmf3Position.z;
 
-		UpdateTransform(NULL);
 
 		pBulletObject->SetDamage(m_nBulletDamage);
 
@@ -643,6 +638,16 @@ void CTankObject::FireBullet()
 		m_fFireWaitingTime = m_fFireDelayTime * m_fGuaranteeFireDelayTime;
 
 	}
+}
+
+void CTankObject::UpdateTankTransform()
+{
+	m_xmf4x4Transform._11 = m_xmf3Right.x; m_xmf4x4Transform._12 = m_xmf3Right.y; m_xmf4x4Transform._13 = m_xmf3Right.z;
+	m_xmf4x4Transform._21 = m_xmf3Up.x; m_xmf4x4Transform._22 = m_xmf3Up.y; m_xmf4x4Transform._23 = m_xmf3Up.z;
+	m_xmf4x4Transform._31 = m_xmf3Look.x; m_xmf4x4Transform._32 = m_xmf3Look.y; m_xmf4x4Transform._33 = m_xmf3Look.z;
+	m_xmf4x4Transform._41 = m_xmf3Position.x; m_xmf4x4Transform._42 = m_xmf3Position.y; m_xmf4x4Transform._43 = m_xmf3Position.z;
+
+	UpdateTransform(NULL);
 }
 
 bool CTankObject::DamagedByBullet(CBulletObject* pBulletObject)
@@ -692,4 +697,17 @@ void CBulletObject::SetFirePosition(XMFLOAT3 xmf3FirePosition)
 {
 	m_xmf3FirePosition = xmf3FirePosition;
 	SetPosition(xmf3FirePosition);
+}
+
+bool CGameObject::HierarchyIntersects(CGameObject* pCollisionGameObject, bool isSecond)
+{
+
+	if (m_xmOOBB.Intersects(pCollisionGameObject->m_xmOOBB) && m_pMesh && pCollisionGameObject->m_pMesh) return true;
+	if (m_pSibling) if (m_pSibling->HierarchyIntersects(pCollisionGameObject, isSecond)) return true;
+	if (m_pChild) if (m_pChild->HierarchyIntersects(pCollisionGameObject, isSecond)) return true;
+
+	if (isSecond)
+		return false;
+
+	return pCollisionGameObject->HierarchyIntersects(this, true);
 }

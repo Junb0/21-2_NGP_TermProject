@@ -17,11 +17,13 @@ void CScene::BuildObjects() {
 	m_nTankObjects = 3;
 	m_ppTankObjects = new CTankObject * [m_nTankObjects];
 
-	CGameObject* pTankModel = CGameObject::LoadGeometryFromFile("Model/GreenTank.bin");
+	CGameObject* pTankModel1 = CGameObject::LoadGeometryFromFile("Model/GreenTank.bin");
+    CGameObject* pTankModel2 = CGameObject::LoadGeometryFromFile("Model/GreenTank.bin");
+    CGameObject* pTankModel3 = CGameObject::LoadGeometryFromFile("Model/GreenTank.bin");
 	CTankObject* pTankObject = NULL;
 
 	pTankObject = new CTankObject();
-	pTankObject->SetChild(pTankModel, true);
+	pTankObject->SetChild(pTankModel1, true);
 	pTankObject->OnInitialize();
 	pTankObject->SetPosition(XMFLOAT3(13.0f, 0.0f, -5.0f));
 	pTankObject->SetScaleVar(1.0f, 1.0f, 1.0f);
@@ -35,7 +37,7 @@ void CScene::BuildObjects() {
 
 
 	pTankObject = new CTankObject();
-	pTankObject->SetChild(pTankModel, true);
+	pTankObject->SetChild(pTankModel2, true);
 	pTankObject->OnInitialize();
 	pTankObject->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
 	pTankObject->SetScaleVar(1.0f, 1.0f, 1.0f);
@@ -49,7 +51,7 @@ void CScene::BuildObjects() {
 
 
 	pTankObject = new CTankObject();
-	pTankObject->SetChild(pTankModel, true);			
+	pTankObject->SetChild(pTankModel3, true);			
 	pTankObject->OnInitialize();
 	pTankObject->SetPosition(XMFLOAT3(-15.0f, 0.0f, -3.0f));	
 	pTankObject->SetScaleVar(1.0f, 1.0f, 1.0f);
@@ -255,11 +257,20 @@ void CScene::ReleaseObjects() {
 
 void CScene::AnimateObjects(float fTimeElapsed) {
 	m_fElapsedTime = fTimeElapsed;
-	for (int i = 0; i < m_nGameObjects; ++i) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
-	for (int i = 0; i < m_nTankObjects; ++i) m_ppTankObjects[i]->Animate(fTimeElapsed, NULL);
+    for (int i = 0; i < m_nGameObjects; ++i)
+    {
+        m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
+        m_ppGameObjects[i]->UpdateTransform(NULL);
+    }
+    for (int i = 0; i < m_nTankObjects; ++i)
+    {
+        m_ppTankObjects[i]->Animate(fTimeElapsed, NULL);
+        m_ppTankObjects[i]->UpdateTankTransform();
+    }
 
 	if (!m_bIsRoundOver)CheckTankObjectByBulletCollisions();
     CheckObjectByBulletCollisions();
+    CheckTankByObjectCollisions(fTimeElapsed);
 }
 
 bool CScene::ProcessInput(DWORD dwDirection, bool bIsRotateLeft, bool bIsRotateRight, bool bIsFire, int nTankIndex, float fTimeElapsed)
@@ -321,6 +332,64 @@ void CScene::CheckObjectByBulletCollisions()
                         //cout << j << "와 " << i << "탱크의 " << k << "번째 총알 충돌" << endl;
                     }
                 }
+            }
+        }
+    }
+}
+
+void CScene::CheckTankByObjectCollisions(float fTimeElapsed)
+{
+    for (int i = 0; i < m_nTankObjects; i++)
+    {
+        for (int j = 0; j < m_nGameObjects; j++)
+        {
+            if (!m_ppGameObjects[j]->m_bIsCollisionsPossible) continue;
+            if (m_ppTankObjects[i]->HierarchyIntersects(m_ppGameObjects[j]))
+            {
+                if (m_ppGameObjects[j]->m_bIsItem)
+                {
+                    /*CItemObject* pItemObject = (CItemObject*)m_ppGameObjects[j];
+                    if (!pItemObject->GetActive()) continue;
+                    int nNowHP;
+                    float fNowBonus;
+                    switch (pItemObject->m_nItemType)
+                    {
+                    case 1:
+                        nNowHP = m_ppTankObjects[i]->GetHP();
+                        nNowHP += 50;
+                        m_ppTankObjects[i]->SetHP(nNowHP);
+                        break;
+                    case 2:
+                        fNowBonus = m_ppTankObjects[i]->GetGuaranteeMaxVel();
+                        fNowBonus += 0.25f;
+                        if (fNowBonus > 2.0f) fNowBonus = 2.0f;
+                        m_ppTankObjects[i]->SetGuaranteeMaxVel(fNowBonus);
+                        break;
+                    case 3:
+                        fNowBonus = m_ppTankObjects[i]->GetGuaranteeFireDelay();
+                        fNowBonus -= 0.2f;
+                        if (fNowBonus < 0.2f) fNowBonus = 0.2f;
+                        m_ppTankObjects[i]->SetGuaranteeFireDelay(fNowBonus);
+                        break;
+                    default:
+                        break;
+                    }
+                    pItemObject->SetActive(false);
+                    pItemObject->m_fUntilActive = 10000.0f;*/
+                }
+                else
+                {
+                    XMFLOAT3 xmf3Sub = m_ppGameObjects[j]->GetPosition();
+                    xmf3Sub = Vector3::Subtract(m_ppTankObjects[i]->GetPosition(), xmf3Sub);
+                    xmf3Sub = Vector3::Normalize(xmf3Sub);
+
+                    float fLen = Vector3::Length(m_ppTankObjects[i]->GetVelocity());
+                    xmf3Sub = Vector3::ScalarProduct(xmf3Sub, fLen, false);
+
+                    m_ppTankObjects[i]->Move(xmf3Sub, true);
+                    cout << i << "번 탱크와 " << j << "번 구조물 충돌!!!" << endl;
+                }
+
             }
         }
     }

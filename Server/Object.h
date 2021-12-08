@@ -51,6 +51,8 @@ public:
 	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
 	void Rotate(XMFLOAT4* pxmf4Quaternion);
 
+	bool HierarchyIntersects(CGameObject* pCollisionGameObject, bool isSecond = false);
+
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
 
 public:
@@ -120,6 +122,8 @@ public:
 
 	int m_nScore = 0;
 	int m_nBulletDamage = 7;
+
+	void UpdateTankTransform();
 
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
 	XMFLOAT3 GetLookVector() { return(m_xmf3Look); }

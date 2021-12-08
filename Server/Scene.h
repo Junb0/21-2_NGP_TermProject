@@ -16,6 +16,7 @@ public:
 
 	void CheckObjectByBulletCollisions();
 	void CheckTankObjectByBulletCollisions();
+	void CheckTankByObjectCollisions(float fTimeElapsed);
 
 public:
 	int m_nGameObjects = 0;
