@@ -271,6 +271,9 @@ void CScene::AnimateObjects(float fTimeElapsed) {
 	if (!m_bIsRoundOver)CheckTankObjectByBulletCollisions();
     CheckObjectByBulletCollisions();
     CheckTankByObjectCollisions(fTimeElapsed);
+
+    if (m_bIsRoundOver) m_fRoundReadyTime -= fTimeElapsed;
+    if (m_bIsRoundOver && m_fRoundReadyTime <= 0.0f) RestartRound();
 }
 
 bool CScene::ProcessInput(DWORD dwDirection, bool bIsRotateLeft, bool bIsRotateRight, bool bIsFire, int nTankIndex, float fTimeElapsed)
@@ -305,6 +308,9 @@ void CScene::CheckTankObjectByBulletCollisions()
 					{
 						m_bIsRoundOver = m_ppTankObjects[j]->DamagedByBullet(ppBullets[k]);
 						ppBullets[k]->SetActive(false);
+
+                        if(m_bIsRoundOver)
+                            m_ppTankObjects[i]->m_nScore++;
 					}
 				}
 			}
@@ -393,4 +399,51 @@ void CScene::CheckTankByObjectCollisions(float fTimeElapsed)
             }
         }
     }
+}
+
+void CScene::RestartRound()
+{
+    m_bIsRoundOver = false;
+    m_fRoundReadyTime = 5.0f;
+    for (int i = 0; i < m_nTankObjects; i++)
+    {
+        if (m_ppTankObjects[i]->GetDead())
+            m_ppTankObjects[i]->SetDead(false);
+
+        m_ppTankObjects[i]->SetHP(100);
+        m_ppTankObjects[i]->m_nBulletDamage += 4;
+       
+        m_ppTankObjects[i]->m_xmf4x4Transform = Matrix4x4::Identity();
+        m_ppTankObjects[i]->m_xmf4x4World = Matrix4x4::Identity();
+
+        for (int j = 0; j < m_ppTankObjects[i]->m_nBullets; j++)
+            if (m_ppTankObjects[i]->m_ppBullets[j]->GetActive()) m_ppTankObjects[i]->m_ppBullets[j]->SetActive(false);
+
+        m_ppTankObjects[i]->SetGuaranteeFireDelay(1.0f);
+        m_ppTankObjects[i]->SetGuaranteeMaxVel(1.0f);
+    }
+
+    if (m_nCurrentRound % 3 == 1)
+    {
+        m_ppTankObjects[0]->SetPosition(XMFLOAT3(13.0f, 0.0f, -5.0f));
+        m_ppTankObjects[1]->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
+        m_ppTankObjects[2]->SetPosition(XMFLOAT3(-15.0f, 0.0f, -3.0f));
+    }
+    else if(m_nCurrentRound % 3 == 2)
+    {
+        m_ppTankObjects[1]->SetPosition(XMFLOAT3(13.0f, 0.0f, -5.0f));
+        m_ppTankObjects[2]->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
+        m_ppTankObjects[0]->SetPosition(XMFLOAT3(-15.0f, 0.0f, -3.0f));
+    }
+    else {
+        m_ppTankObjects[2]->SetPosition(XMFLOAT3(13.0f, 0.0f, -5.0f));
+        m_ppTankObjects[0]->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
+        m_ppTankObjects[1]->SetPosition(XMFLOAT3(-15.0f, 0.0f, -3.0f));
+    }
+
+    m_nCurrentRound++;
+    for (int i = 0; i < m_nTankObjects; i++)
+        if (m_ppTankObjects[i]->m_nScore >= 3) m_bIsGameOver = true;
+
+    //InitItems();
 }

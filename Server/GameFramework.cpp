@@ -72,22 +72,34 @@ void CGameFramework::FrameAdvance()
 
 void CGameFramework::CheckGameOver()
 {
-	//if (m_pScene->m_bIsGameOver) {
-	//	std::wstring wstr;
-	//	wstr += L"게임종료\n";
-	//	if(m_pScene->m_ppTankObjects[0]->m_nScore < m_pScene->m_ppTankObjects[1]->m_nScore)
-	//		wstr += L"플레이어 1 (그린) 승리 \n\n";
-	//	else
-	//		wstr += L"플레이어 2 (레드) 승리 \n\n";
-	//	wstr += L"플레이어 1 (그린) 점수: " + std::to_wstring(int(m_pScene->m_ppTankObjects[1]->m_nScore)) + L" 점\n";
-	//	wstr += L"플레이어 2 (레드) 점수: " + std::to_wstring(int(m_pScene->m_ppTankObjects[0]->m_nScore)) + L" 점\n\n";
-	//	wstr += L"총 라운드 수: " + std::to_wstring(m_pScene->m_nNowRound) + L" (3점 내기)\n\n";
-	//
-	//	LPTSTR s = new TCHAR[wstr.size() + 1];
-	//	_tcscpy(s, LPTSTR(wstr.c_str()));
-	//	MessageBox(m_hWnd, s, _T("Game Over"), NULL);
-	//	PostQuitMessage(0);
-	//}
+	if (m_pScene->m_bIsGameOver) {
+		std::string str;
+		str += "게임종료\n";
+
+		int p1Score = m_pScene->m_ppTankObjects[0]->m_nScore;
+		int p2Score = m_pScene->m_ppTankObjects[1]->m_nScore;
+		int p3Score = m_pScene->m_ppTankObjects[2]->m_nScore;
+
+		if (p1Score > p2Score) {
+			if(p1Score > p3Score)
+			str += "플레이어1 승리 \n\n";
+			else
+			str += "플레이어3 승리 \n\n";
+		}
+		else {
+			if(p2Score > p3Score)
+			str += "플레이어2 승리 \n\n";
+			else
+			str += "플레이어3 승리 \n\n";
+		}
+		str += "플레이어1 점수: " + std::to_string(p1Score) + " 점\n";
+		str += "플레이어2 점수: " + std::to_string(p2Score) + " 점\n\n";
+		str += "플레이어3 점수: " + std::to_string(p3Score) + " 점\n\n";
+		str += "총 라운드 수: " + std::to_string(m_pScene->m_nCurrentRound) + " (3점 내기)\n\n";
+	
+		printf(str.c_str());
+		//PostQuitMessage(0);
+	}
 }
 
 void CGameFramework::SetRequestMessage(int id, char* pRecvBuff)
@@ -126,9 +138,10 @@ void CGameFramework::SetResponseMessage()
 	}
 	
 
-	m_ResponseMessage.nCurrentRound = 1;
+	m_ResponseMessage.nCurrentRound = m_pScene->m_nCurrentRound;
+	m_ResponseMessage.bIsRoundOver = m_pScene->m_bIsRoundOver;
 
-	m_ResponseMessage.bIsGameOver = false;
+	m_ResponseMessage.bIsGameOver = m_pScene->m_bIsGameOver;
 }
 
 void CGameFramework::ProcessInput()

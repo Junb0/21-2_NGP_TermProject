@@ -41,7 +41,8 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
    m_nTankObjects = 3;
    m_ppTankObjects = new CTankObject* [m_nTankObjects];
 
-   CGameObject* pTankModelGreen = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/GreenTank.bin");
+   CGameObject* pTankModelGreen1 = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/GreenTank.bin");
+   CGameObject* pTankModelGreen2 = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/GreenTank.bin");
    CGameObject* pTankModelRed = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/RedTank.bin");
    CTankObject* pTankObject = NULL;
 
@@ -61,7 +62,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 
    pTankObject = new CTankObject();
-   pTankObject->SetChild(pTankModelGreen, true);
+   pTankObject->SetChild(pTankModelGreen1, true);
    pTankObject->OnInitialize();
    pTankObject->SetPosition(XMFLOAT3(-3.0f, 0.0f, 30.0f));
    pTankObject->SetScaleVar(1.0f, 1.0f, 1.0f);
@@ -76,7 +77,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
   
    pTankObject = new CTankObject();
-   pTankObject->SetChild(pTankModelGreen, true);			// 임의의 모델
+   pTankObject->SetChild(pTankModelGreen2, true);			// 임의의 모델
    pTankObject->OnInitialize();
    pTankObject->SetPosition(XMFLOAT3(9.0f, 0.0f, 10.0f));	// 임의의 위치
    pTankObject->SetScaleVar(1.0f, 1.0f, 1.0f);
@@ -275,7 +276,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
       m_ppGameObjects[i] = pGameObject;
    }
-   InitItems();
+   //InitItems();
    CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
@@ -557,7 +558,7 @@ bool CScene::SetCameraPosition(float fTimeElapsed)
 
 	XMFLOAT3 xmf3Temp;
 	xmf3Temp = XMFLOAT3(fTanksObjectsSumX / m_nTankObjects, 0.0f, fTanksObjectsSumZ / m_nTankObjects);
-	if (m_bIsRoundOver) { xmf3Temp.x = fTanksObjectsSumX; xmf3Temp.z = fTanksObjectsSumZ; }
+	//if (m_bIsRoundOver) { xmf3Temp.x = fTanksObjectsSumX; xmf3Temp.z = fTanksObjectsSumZ; }
 	xmf3Temp = Vector3::Subtract(xmf3Temp, m_pPlayer->GetPosition());
 	xmf3Temp = Vector3::ScalarProduct(xmf3Temp, fTimeElapsed * 3.0f, false);
 	m_pPlayer->Move(xmf3Temp, false);
@@ -613,16 +614,23 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	for (int i = 0; i < m_nGameObjects; i++) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
 	for (int i = 0; i < m_nTankObjects; i++)
 	{
+		if (m_bIsRoundOver) {
+			if (m_ppTankObjects[i]->GetHP() <= 0) {
+				m_ppTankObjects[i]->SetHP(0);
+				m_ppTankObjects[i]->SetDead(true);
+			}
+		}
+
 		m_ppTankObjects[i]->Animate(fTimeElapsed, NULL);
 		for (int j = 0; j < m_ppTankObjects[i]->m_nBullets; j++)
 			m_ppTankObjects[i]->m_ppBullets[j]->Animate(fTimeElapsed, NULL);
 	}
-	if(!m_bIsRoundOver)CheckTankObjectByBulletCollisions();
-	CheckObjectByBulletCollisions();
-	CheckTankByObjectCollisions(fTimeElapsed);
+	//if(!m_bIsRoundOver)CheckTankObjectByBulletCollisions();
+	//CheckObjectByBulletCollisions();
+	//CheckTankByObjectCollisions(fTimeElapsed);
 	
-	if (m_bIsRoundOver) m_fRoundReadyTime -= fTimeElapsed;
-	if (m_bIsRoundOver && m_fRoundReadyTime <= 0.0f) RestartRound();
+	//if (m_bIsRoundOver) m_fRoundReadyTime -= fTimeElapsed;
+	//if (m_bIsRoundOver && m_fRoundReadyTime <= 0.0f) RestartRound();
 }
 
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)

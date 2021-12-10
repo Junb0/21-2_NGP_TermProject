@@ -579,12 +579,26 @@ void CGameFramework::CheckGameOver()
 	if (m_pScene->m_bIsGameOver) {
 		std::wstring wstr;
 		wstr += L"게임종료\n";
-		if(m_pScene->m_ppTankObjects[0]->m_nScore < m_pScene->m_ppTankObjects[1]->m_nScore)
-			wstr += L"플레이어 1 (그린) 승리 \n\n";
-		else
-			wstr += L"플레이어 2 (레드) 승리 \n\n";
-		wstr += L"플레이어 1 (그린) 점수: " + std::to_wstring(int(m_pScene->m_ppTankObjects[1]->m_nScore)) + L" 점\n";
-		wstr += L"플레이어 2 (레드) 점수: " + std::to_wstring(int(m_pScene->m_ppTankObjects[0]->m_nScore)) + L" 점\n\n";
+
+		int p1Score = m_pScene->m_ppTankObjects[0]->m_nScore;
+		int p2Score = m_pScene->m_ppTankObjects[1]->m_nScore;
+		int p3Score = m_pScene->m_ppTankObjects[2]->m_nScore;
+
+		if (p1Score > p2Score) {
+			if (p1Score > p3Score)
+				wstr += L"플레이어1 승리 \n\n";
+			else
+				wstr += L"플레이어3 승리 \n\n";
+		}
+		else {
+			if (p2Score > p3Score)
+				wstr += L"플레이어2 승리 \n\n";
+			else
+				wstr += L"플레이어3 승리 \n\n";
+		}
+		wstr += L"플레이어1 점수: " + std::to_wstring(p1Score) + L" 점\n";
+		wstr += L"플레이어2 점수: " + std::to_wstring(p2Score) + L" 점\n\n";
+		wstr += L"플레이어3 점수: " + std::to_wstring(p3Score) + L" 점\n\n";
 		wstr += L"총 라운드 수: " + std::to_wstring(m_pScene->m_nCurrentRound) + L" (3점 내기)\n\n";
 
 		LPTSTR s = new TCHAR[wstr.size() + 1];
@@ -633,7 +647,20 @@ void CGameFramework::ApplySceneInfo()
 
 	// Round
 	m_pScene->m_nCurrentRound = m_ResponseMessage.nCurrentRound;
+
+	bool bOldRoundOver = m_pScene->m_bIsRoundOver;
+	m_pScene->m_bIsRoundOver = m_ResponseMessage.bIsRoundOver;
 	
+	if (bOldRoundOver != m_pScene->m_bIsRoundOver && m_pScene->m_bIsRoundOver == false) {
+		for (int i = 0; i < m_pScene->m_nTankObjects; i++)
+		{
+			m_pScene->m_ppTankObjects[i]->SetDead(false);
+
+			if (m_pScene->m_ppTankObjects[i]->m_pTankTurret)
+				m_pScene->m_ppTankObjects[i]->m_pTankTurret->m_xmf4x4Transform = m_pScene->m_ppTankObjects[i]->m_xmf4x4OriginalTurretTransform;
+		}
+	}
+
 	// GameOver
 	m_pScene->m_bIsGameOver = m_ResponseMessage.bIsGameOver;
 }

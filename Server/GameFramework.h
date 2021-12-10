@@ -21,7 +21,7 @@ struct ResponseMessage
 	XMFLOAT3 xmf3ItemsPosition[6];
 
 	int nCurrentRound;
-
+	bool bIsRoundOver;
 	bool bIsGameOver;
 };
 

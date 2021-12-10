@@ -18,6 +18,8 @@ public:
 	void CheckTankObjectByBulletCollisions();
 	void CheckTankByObjectCollisions(float fTimeElapsed);
 
+	void RestartRound();
+
 public:
 	int m_nGameObjects = 0;
 	CGameObject** m_ppGameObjects = NULL;
@@ -25,8 +27,12 @@ public:
 	int m_nTankObjects = 0;
 	CTankObject** m_ppTankObjects = NULL;
 
+	int m_nCurrentRound = 0;
+
 	bool m_bIsRoundOver = false;
 	bool m_bIsGameOver = false;
+
+	float m_fRoundReadyTime = 3.0f;
 
 	float m_fElapsedTime = 0.0f;
 };
