@@ -221,12 +221,12 @@ void CScene::BuildObjects() {
        { "ruins01", XMFLOAT3(37.86f, 0.03f, 24.48f), XMFLOAT3(0.0f, -155.24f, 0.0f), XMFLOAT3(1.28f, 1.28f, 1.28f), true },
 
 
-       /*{ "grape", XMFLOAT3(13.0f, 1.5f, -10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 2},
+       { "grape", XMFLOAT3(13.0f, 1.5f, -10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 2},
        { "apple", XMFLOAT3(13.0f, 1.5f, -7.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 1},
        { "cherry", XMFLOAT3(13.0f, 1.5f, -5.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 3},
        { "grape", XMFLOAT3(13.0f, 1.5f, -10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 2},
        { "apple", XMFLOAT3(13.0f, 1.5f, -7.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 1},
-       { "cherry", XMFLOAT3(13.0f, 1.5f, -5.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 3}*/
+       { "cherry", XMFLOAT3(13.0f, 1.5f, -5.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(4.0f, 4.0f, 4.0f), true, true, 3}
     };
 
     m_nGameObjects = sizeof(formats) / sizeof(formats[0]);
@@ -237,8 +237,8 @@ void CScene::BuildObjects() {
         CGameObject* pGameObject = NULL;
         CGameObject* pNewModel = NULL;
 
-        /*if (formats[i].isItem) pGameObject = new CItemObject(formats[i].iTemType);
-        else*/ pGameObject = new CGameObject();
+        if (formats[i].isItem) pGameObject = new CItemObject(formats[i].iTemType);
+        else pGameObject = new CGameObject();
         pNewModel = CGameObject::LoadGeometryFromFile(modelDictionary[formats[i].pstrModelObject]);
 
         pGameObject->SetChild(pNewModel, true);
@@ -249,6 +249,49 @@ void CScene::BuildObjects() {
 
         m_ppGameObjects[i] = pGameObject;
     }
+    InitItems();
+}
+
+void CScene::InitItems()
+{
+    std::random_device rd;
+    std::default_random_engine dre(rd());
+    std::uniform_real_distribution<float> urd_coord(-40.0f, 40.0f);
+    std::uniform_real_distribution<float> urd_active_time(2.0f, 30.0f);
+
+    for (int i = 0; i < m_nGameObjects; i++) m_ppGameObjects[i]->Animate(0.0f);
+
+    for (int i = 0; i < m_nGameObjects; i++)
+    {
+        if (m_ppGameObjects[i]->m_bIsItem)
+        {
+            CItemObject* pItemObject = (CItemObject*)m_ppGameObjects[i];
+            float fTempX, fTempZ;
+            while (true)
+            {
+                bool bPass = true;
+                fTempX = urd_coord(dre); fTempZ = urd_coord(dre);
+                pItemObject->SetPosition(fTempX, -1.5f, fTempZ);
+                pItemObject->CGameObject::Animate(0.0f);
+
+                for (int j = 0; j < m_nGameObjects; j++)
+                {
+                    if (i == j) continue;
+                    if (!m_ppGameObjects[j]->m_bIsCollisionsPossible) continue;
+                    if (pItemObject->m_pChild->m_xmOOBB.Intersects(m_ppGameObjects[j]->m_pChild->m_xmOOBB))
+                    {
+                        bPass = false;
+                        break;
+                    }
+                }
+                if (bPass) break;
+            }
+            pItemObject->SetPosition(fTempX, -1.5f, fTempZ);
+            pItemObject->m_fUntilActive = urd_active_time(dre);
+            pItemObject->m_bIsActive = true;
+        }
+    }
+
 }
 
 void CScene::ReleaseObjects() {
@@ -354,7 +397,7 @@ void CScene::CheckTankByObjectCollisions(float fTimeElapsed)
             {
                 if (m_ppGameObjects[j]->m_bIsItem)
                 {
-                    /*CItemObject* pItemObject = (CItemObject*)m_ppGameObjects[j];
+                    CItemObject* pItemObject = (CItemObject*)m_ppGameObjects[j];
                     if (!pItemObject->GetActive()) continue;
                     int nNowHP;
                     float fNowBonus;
@@ -381,7 +424,7 @@ void CScene::CheckTankByObjectCollisions(float fTimeElapsed)
                         break;
                     }
                     pItemObject->SetActive(false);
-                    pItemObject->m_fUntilActive = 10000.0f;*/
+                    pItemObject->m_fUntilActive = 10000.0f;
                 }
                 else
                 {
@@ -445,5 +488,5 @@ void CScene::RestartRound()
     for (int i = 0; i < m_nTankObjects; i++)
         if (m_ppTankObjects[i]->m_nScore >= 3) m_bIsGameOver = true;
 
-    //InitItems();
+    InitItems();
 }

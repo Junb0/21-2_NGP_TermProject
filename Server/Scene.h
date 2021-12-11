@@ -8,6 +8,7 @@ public:
 	~CScene();
 
 	void BuildObjects();
+	void InitItems();
 	void ReleaseObjects();
 
 	void AnimateObjects(float fTimeElapsed);
