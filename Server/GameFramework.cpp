@@ -131,10 +131,10 @@ void CGameFramework::SetResponseMessage()
 		
 	}
 
-	
+	CGameObject** ppGameObjects = m_pScene->m_ppGameObjects;
 	for (int i = 0; i < 6; ++i) {
-		m_ResponseMessage.bItemsActive[i] = false;
-		m_ResponseMessage.xmf3ItemsPosition[i] = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+		m_ResponseMessage.bItemsActive[i] = ((CItemObject*)ppGameObjects[i + 106])->m_bIsActive;
+		m_ResponseMessage.xmf3ItemsPosition[i] = XMFLOAT3{ ((CItemObject*)ppGameObjects[i + 106])->GetPosition().x, ((CItemObject*)ppGameObjects[i + 106])->GetPosition().y, ((CItemObject*)ppGameObjects[i + 106])->GetPosition().z };
 	}
 	
 
