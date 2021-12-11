@@ -354,6 +354,24 @@ CGameObject* CGameObject::LoadGeometryFromFile(char* pstrFileName)
 	return(pGameObject);
 }
 
+CRotatingObject::CRotatingObject()
+{
+	m_xmf3RotationAxis = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	m_fRotationSpeed = 45.0f;
+}
+
+CRotatingObject::~CRotatingObject()
+{
+}
+
+void CRotatingObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	CGameObject::Rotate(&m_xmf3RotationAxis, m_fRotationSpeed * fTimeElapsed);
+
+	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+}
+
+
 void CGameObject::SetPosition(float x, float y, float z)
 {
 	m_xmf4x4Transform._41 = x;
@@ -697,6 +715,36 @@ void CBulletObject::SetFirePosition(XMFLOAT3 xmf3FirePosition)
 {
 	m_xmf3FirePosition = xmf3FirePosition;
 	SetPosition(xmf3FirePosition);
+}
+
+
+CItemObject::CItemObject()
+{
+	m_bIsItem = true;
+}
+
+CItemObject::CItemObject(int nType)
+{
+	m_bIsItem = true;
+	m_nItemType = nType;
+}
+
+CItemObject::~CItemObject()
+{
+}
+
+void CItemObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	if (m_bIsActive)
+	{
+		if (GetPosition().y < 1.5f) {
+			XMFLOAT3 xmf3Position = GetPosition();
+			XMFLOAT3 xmf3Up = GetUp();
+			xmf3Position = Vector3::Add(xmf3Position, xmf3Up, 1.5f * fTimeElapsed);
+			CGameObject::SetPosition(xmf3Position);
+		}
+		CRotatingObject::Animate(fTimeElapsed, pxmf4x4Parent);
+	}
 }
 
 bool CGameObject::HierarchyIntersects(CGameObject* pCollisionGameObject, bool isSecond)

@@ -64,6 +64,41 @@ public:
 	static void PrintFrameInfo(CGameObject* pGameObject, CGameObject* pParent);
 };
 
+class CRotatingObject : public CGameObject
+{
+public:
+	CRotatingObject();
+	virtual ~CRotatingObject();
+
+private:
+	XMFLOAT3					m_xmf3RotationAxis;
+	float						m_fRotationSpeed;
+
+public:
+	void SetRotationSpeed(float fRotationSpeed) { m_fRotationSpeed = fRotationSpeed; }
+	void SetRotationAxis(XMFLOAT3 xmf3RotationAxis) { m_xmf3RotationAxis = xmf3RotationAxis; }
+
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+};
+
+class CItemObject : public CRotatingObject
+{
+public:
+	CItemObject();
+	CItemObject(int nType);
+	virtual ~CItemObject();
+
+public:
+	int							m_nItemType = 0;	// 1 : apple(HP)  2 : grape(MaxMoveSpeed)  3 : cherry(FireDelay)
+	bool						m_bIsActive = false;
+	float						m_fUntilActive = 10000.0f;
+
+	void SetActive(bool bIsActive) { m_bIsActive = bIsActive; }
+	bool GetActive() { return m_bIsActive; }
+
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+};
+
 class CBulletObject : public CGameObject
 {
 public:
