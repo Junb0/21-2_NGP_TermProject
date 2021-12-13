@@ -87,11 +87,16 @@ int recvn(SOCKET s, char* buf, int len, int flags)
 
 DWORD WINAPI SendThread(LPVOID arg)
 {
+	CGameTimer GameTimer;
 	SOCKET sock = (SOCKET)arg;
 
 	int retval;
 	SOCKADDR_IN serveraddr;
 	int addrlen;
+
+	// 게임 타이머 리셋
+	GameTimer.Reset();
+	GameTimer.Start();
 
 	// 서버 정보 얻기
 	addrlen = sizeof(serveraddr);
@@ -100,6 +105,7 @@ DWORD WINAPI SendThread(LPVOID arg)
 	// 서버에게 데이터 보내기
 	while (1) {
 		// 쓰기 완료 대기
+		GameTimer.Tick(30.0f);
 		retval = WaitForSingleObject(hSendBufferWriteEvent, 33);
 		if (retval == WAIT_TIMEOUT) continue;
 
@@ -117,6 +123,7 @@ DWORD WINAPI SendThread(LPVOID arg)
 
 DWORD WINAPI RecvThread(LPVOID arg)
 {
+	CGameTimer GameTimer;
 	SOCKET sock = (SOCKET)arg;
 
 	int retval;
@@ -124,13 +131,17 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	int addrlen;
 	ResponseMessage rpSceneInfo;
 
+	// 게임타이머 리셋
+	GameTimer.Reset();
+	GameTimer.Start();
+
 	// 서버 정보 얻기
 	addrlen = sizeof(serveraddr);
 	getpeername(sock, (SOCKADDR*)&serveraddr, &addrlen);
 
 	// 서버에게 데이터 받기
 	while (1) {
-		//ZeroMemory(&rpSceneInfo, sizeof(rpSceneInfo));
+		ZeroMemory(&rpSceneInfo, sizeof(rpSceneInfo));
 		retval = recvn(sock, (char*)&rpSceneInfo, sizeof(rpSceneInfo), 0);
 
 		EnterCriticalSection(&csResponseSceneBufferAccess);
@@ -222,8 +233,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 			gGameFramework.FrameAdvance();
 			
 			rqTankInfo = gGameFramework.GetRequestMessage();
-			retval = WaitForSingleObject(hSendBufferReadEvent, 33);	// 1프레임
-			if (retval == WAIT_TIMEOUT) continue;
+			//retval = WaitForSingleObject(hSendBufferReadEvent, 33);	// 1프레임
+			//if (retval == WAIT_TIMEOUT) continue;
 			SetEvent(hSendBufferWriteEvent);
 		}
 	}
