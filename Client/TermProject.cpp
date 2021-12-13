@@ -24,11 +24,10 @@ TCHAR							szWindowClass[MAX_LOADSTRING];
 
 CGameFramework					gGameFramework;
 
-HANDLE hSendBufferWriteEvent;
-HANDLE hSendBufferReadEvent;
 RequestMessage rqTankInfo;
 
 CRITICAL_SECTION csResponseSceneBufferAccess;
+CRITICAL_SECTION csRequestTankInfoAccess;
 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
@@ -106,16 +105,15 @@ DWORD WINAPI SendThread(LPVOID arg)
 	while (1) {
 		// 쓰기 완료 대기
 		GameTimer.Tick(30.0f);
-		retval = WaitForSingleObject(hSendBufferWriteEvent, 33);
-		if (retval == WAIT_TIMEOUT) continue;
+
+		EnterCriticalSection(&csRequestTankInfoAccess);
 
 		// 데이터 전송
 		send(sock, (const char*)&rqTankInfo, sizeof(RequestMessage), NULL);
 
 		ZeroMemory(&rqTankInfo, sizeof(rqTankInfo));
 		
-		// 읽기 완료 알림
-		SetEvent(hSendBufferReadEvent);
+		LeaveCriticalSection(&csRequestTankInfoAccess);
 	}
 
 	return 0;
@@ -174,10 +172,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
 	//if (retval == SOCKET_ERROR) err_quit((char*)"connect()");
 
-	// create event
-	hSendBufferWriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	hSendBufferReadEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
-
 	// make send thread
 	HANDLE hSendThread;
 
@@ -189,6 +183,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 
 	// InitCS
 	InitializeCriticalSection(&csResponseSceneBufferAccess);
+	InitializeCriticalSection(&csRequestTankInfoAccess);
 
 	// make recv thread
 	HANDLE hRecvThread;
@@ -232,17 +227,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 
 			gGameFramework.FrameAdvance();
 			
+			EnterCriticalSection(&csRequestTankInfoAccess);
 			rqTankInfo = gGameFramework.GetRequestMessage();
-			//retval = WaitForSingleObject(hSendBufferReadEvent, 33);	// 1프레임
-			//if (retval == WAIT_TIMEOUT) continue;
-			SetEvent(hSendBufferWriteEvent);
+			LeaveCriticalSection(&csRequestTankInfoAccess);
 		}
 	}
 	gGameFramework.OnDestroy();
 
-	// 이벤트 제거
-	CloseHandle(hSendBufferReadEvent);
-	CloseHandle(hSendBufferWriteEvent);
 
 	// closesocket()
 	closesocket(sock);
