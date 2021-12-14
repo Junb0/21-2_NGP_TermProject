@@ -67,7 +67,7 @@ void CGameFramework::FrameAdvance()
 	
     AnimateObjects();
 
-	CheckGameOver();
+	//CheckGameOver();
 }
 
 void CGameFramework::CheckGameOver()

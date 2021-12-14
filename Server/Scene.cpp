@@ -436,7 +436,7 @@ void CScene::CheckTankByObjectCollisions(float fTimeElapsed)
                     xmf3Sub = Vector3::ScalarProduct(xmf3Sub, fLen, false);
 
                     m_ppTankObjects[i]->Move(xmf3Sub, true);
-                    cout << i << "번 탱크와 " << j << "번 구조물 충돌!!!" << endl;
+                    //cout << i << "번 탱크와 " << j << "번 구조물 충돌!!!" << endl;
                 }
 
             }

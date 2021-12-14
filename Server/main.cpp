@@ -81,7 +81,7 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	// 클라이언트로부터 데이터 받기
 	while (1) {
 		// 스레드 신호 대기
-		retval = WaitForSingleObject(hRecvThreadEvent[threadID], 33);
+		retval = WaitForSingleObject(hRecvThreadEvent[threadID], 3);
 		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[threadID + 1]);
 
 		ZeroMemory(&recvbuf, sizeof(recvbuf));
@@ -216,7 +216,7 @@ int main(int argc, char *argv[]) {
 
 	while (1) {
 		// main 스레드 신호 대기
-		retval = WaitForSingleObject(hRecvThreadEvent[3], 33);
+		retval = WaitForSingleObject(hRecvThreadEvent[3], 3);
 		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[0]);
 
 		gGameFramework.ProcessInput();
