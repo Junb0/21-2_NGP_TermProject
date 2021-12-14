@@ -74,6 +74,14 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	char recvbuf[RECVBUFSIZE];
 	int threadID = recvThreadCnt++;
 
+	int option = TRUE; 
+	setsockopt(client_sock, 
+		IPPROTO_TCP,  
+		TCP_NODELAY, 
+		(const char*)&option, 
+		sizeof(option));
+
+
 	// 클라이언트 정보 얻기
 	addrlen = sizeof(clientaddr);
 	getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
@@ -81,8 +89,8 @@ DWORD WINAPI RecvThread(LPVOID arg)
 	// 클라이언트로부터 데이터 받기
 	while (1) {
 		// 스레드 신호 대기
-		retval = WaitForSingleObject(hRecvThreadEvent[threadID], 3);
-		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[threadID + 1]);
+		retval = WaitForSingleObject(hRecvThreadEvent[threadID], 10);
+		if (retval == WAIT_TIMEOUT) {SetEvent(hRecvThreadEvent[threadID + 1]);
 
 		ZeroMemory(&recvbuf, sizeof(recvbuf));
 
@@ -111,6 +119,25 @@ DWORD WINAPI SendThread(LPVOID arg)
 	int retval;
 	SOCKADDR_IN clientaddrs[3];
 	int addrlen[3];
+
+	int option = TRUE;
+	setsockopt(client_socks[0],
+		IPPROTO_TCP,
+		TCP_NODELAY,
+		(const char*)&option,
+		sizeof(option));
+
+	setsockopt(client_socks[1],
+		IPPROTO_TCP,
+		TCP_NODELAY,
+		(const char*)&option,
+		sizeof(option));
+
+	setsockopt(client_socks[2],
+		IPPROTO_TCP,
+		TCP_NODELAY,
+		(const char*)&option,
+		sizeof(option));
 
 	// 클라이언트 정보 얻기
 	for (int i = 0; i < 3; ++i)
@@ -216,7 +243,7 @@ int main(int argc, char *argv[]) {
 
 	while (1) {
 		// main 스레드 신호 대기
-		retval = WaitForSingleObject(hRecvThreadEvent[3], 3);
+		retval = WaitForSingleObject(hRecvThreadEvent[3], 10);
 		if (retval == WAIT_TIMEOUT) SetEvent(hRecvThreadEvent[0]);
 
 		gGameFramework.ProcessInput();
